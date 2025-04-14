@@ -14,25 +14,31 @@ const Index = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let particles: { x: number; y: number; size: number; vx: number; vy: number }[] = [];
+    let particles: { x: number; y: number; size: number; vx: number; vy: number; color: string }[] = [];
     let mouseX = 0;
     let mouseY = 0;
 
     const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      particles = Array.from({ length: 100 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 1,
-        vx: 0,
-        vy: 0
-      }));
+      particles = Array.from({ length: 100 }, () => {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        // Gradient colors based on position
+        const hue = (x / canvas.width) * 60 + 200; // Range from 200 to 260 (blue to purple)
+        return {
+          x,
+          y,
+          size: Math.random() * 3 + 2, // Slightly bigger particles
+          vx: 0,
+          vy: 0,
+          color: `hsla(${hue}, 70%, 50%, 0.8)`
+        };
+      });
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(158, 158, 158, 0.1)';
 
       particles.forEach(particle => {
         const dx = mouseX - particle.x;
@@ -41,8 +47,8 @@ const Index = () => {
         
         if (distance < 100) {
           const angle = Math.atan2(dy, dx);
-          particle.vx = -Math.cos(angle) * (100 - distance) * 0.01;
-          particle.vy = -Math.sin(angle) * (100 - distance) * 0.01;
+          particle.vx = -Math.cos(angle) * (100 - distance) * 0.02;
+          particle.vy = -Math.sin(angle) * (100 - distance) * 0.02;
         }
 
         particle.x += particle.vx;
@@ -55,7 +61,12 @@ const Index = () => {
         if (particle.y < 0) particle.y = canvas.height;
         if (particle.y > canvas.height) particle.y = 0;
 
+        // Calculate opacity based on vertical position (fade out towards bottom)
+        const opacity = 1 - (particle.y / canvas.height) * 0.8;
+        const color = particle.color.replace('0.8', opacity.toString());
+
         ctx.beginPath();
+        ctx.fillStyle = color;
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
       });
@@ -84,10 +95,10 @@ const Index = () => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
-        style={{ opacity: 0.5 }}
+        style={{ opacity: 0.7 }}
       />
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-12">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 gap-12 relative z-10">
         <p className="text-4xl font-bold text-gray-700 dark:text-gray-300 animate-fade-in text-center">
           Klikni na tlačítko pro nahrání souborů
         </p>
