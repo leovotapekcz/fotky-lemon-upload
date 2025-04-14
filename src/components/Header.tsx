@@ -7,7 +7,7 @@ export default function Header() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <header className="w-full p-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-b-lg shadow-md">
+    <header className="w-full p-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-lg shadow-md mt-4 mx-auto max-w-7xl">
       <div className="container mx-auto flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Fotky 9.C</h1>
         <Button
