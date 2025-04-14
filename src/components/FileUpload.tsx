@@ -48,11 +48,13 @@ export default function FileUpload() {
         size="lg"
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
-        className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg px-8 py-6 text-xl flex items-center gap-3 transform hover:scale-105 transition-all"
+        className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg px-8 py-6 text-xl flex items-center gap-3 transform hover:scale-105 transition-all active:scale-95 hover:shadow-xl"
       >
-        <Upload className="w-6 h-6" />
+        <Upload className="w-6 h-6 animate-bounce" />
         {uploading ? "Nahrávání..." : "Nahraj jakékoli soubory"}
       </Button>
     </div>
   );
 }
+
+export default FileUpload;
