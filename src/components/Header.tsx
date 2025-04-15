@@ -9,37 +9,39 @@ export default function Header() {
   const [isMinimized, setIsMinimized] = useState(false);
 
   return (
-    <header className={`w-full p-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-3xl shadow-lg mt-6 mx-auto max-w-5xl border-4 border-white transition-all duration-300 ${isMinimized ? 'h-16' : 'h-auto'}`}>
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className={`text-2xl font-bold text-white transition-opacity duration-300 ${isMinimized ? 'opacity-0' : 'opacity-100'}`}>
-          Fotky 9.C
-        </h1>
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300 hover:rotate-[360deg]"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5 text-white animate-spin-slow" />
-            ) : (
-              <Moon className="h-5 w-5 text-white animate-spin-slow" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300"
-            onClick={() => setIsMinimized(!isMinimized)}
-          >
-            {isMinimized ? (
-              <ChevronDown className="h-5 w-5 text-white" />
-            ) : (
-              <ChevronUp className="h-5 w-5 text-white" />
-            )}
-          </Button>
-        </div>
+    <header className={`w-full p-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-3xl shadow-lg mt-6 mx-auto max-w-5xl border-2 border-white transition-all duration-300 ${isMinimized ? 'h-16' : 'h-auto'}`}>
+      <div className="container mx-auto flex justify-center items-center relative">
+        {!isMinimized && (
+          <>
+            <h1 className="text-2xl font-bold text-white absolute left-0">
+              Fotky 9.C
+            </h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-colors absolute right-0"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5 text-white" />
+              ) : (
+                <Moon className="h-5 w-5 text-white" />
+              )}
+            </Button>
+          </>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300"
+          onClick={() => setIsMinimized(!isMinimized)}
+        >
+          {isMinimized ? (
+            <ChevronDown className="h-5 w-5 text-white" />
+          ) : (
+            <ChevronUp className="h-5 w-5 text-white" />
+          )}
+        </Button>
       </div>
     </header>
   );

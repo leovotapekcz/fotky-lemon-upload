@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import FileUpload from "@/components/FileUpload";
 import Footer from "@/components/Footer";
@@ -24,12 +23,11 @@ const Index = () => {
       particles = Array.from({ length: 100 }, () => {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        // Gradient colors based on position
-        const hue = (x / canvas.width) * 60 + 200; // Range from 200 to 260 (blue to purple)
+        const hue = (x / canvas.width) * 60 + 200;
         return {
           x,
           y,
-          size: Math.random() * 3 + 2, // Slightly bigger particles
+          size: Math.random() * 4 + 3,
           vx: 0,
           vy: 0,
           color: `hsla(${hue}, 70%, 50%, 0.8)`
@@ -61,8 +59,8 @@ const Index = () => {
         if (particle.y < 0) particle.y = canvas.height;
         if (particle.y > canvas.height) particle.y = 0;
 
-        // Calculate opacity based on vertical position (fade out towards bottom)
-        const opacity = 1 - (particle.y / canvas.height) * 0.8;
+        const distanceFromCenter = Math.abs((particle.y / canvas.height) - 0.5) * 2;
+        const opacity = 1 - Math.pow(distanceFromCenter, 2);
         const color = particle.color.replace('0.8', opacity.toString());
 
         ctx.beginPath();
