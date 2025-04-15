@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function FileUpload() {
+interface FileUploadProps {
+  onUploadProgress?: (progress: number | null) => void;
+}
+
+export default function FileUpload({ onUploadProgress }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -13,20 +17,44 @@ export default function FileUpload() {
     const files = event.target.files;
     if (!files?.length) return;
 
+    uploadFiles(files);
+  };
+
+  const uploadFiles = async (files: FileList) => {
     setUploading(true);
+    onUploadProgress && onUploadProgress(0);
+    
     try {
-      // Here we're just simulating the upload - in a real app, you'd send this to a server
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast({
-        title: "Soubory nahrány",
-        description: `${files.length} ${files.length === 1 ? 'soubor byl nahrán' : 'soubory byly nahrány'} úspěšně.`
-      });
+      // Simulate upload progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+        }
+        onUploadProgress && onUploadProgress(progress);
+      }, 200);
+      
+      // Simulate network request
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      clearInterval(interval);
+      onUploadProgress && onUploadProgress(100);
+      
+      setTimeout(() => {
+        onUploadProgress && onUploadProgress(null);
+        toast({
+          title: "Soubory nahrány",
+          description: `${files.length} ${files.length === 1 ? 'soubor byl nahrán' : 'soubory byly nahrány'} úspěšně.`
+        });
+      }, 500);
     } catch (error) {
       toast({
         title: "Chyba",
         description: "Nastala chyba při nahrávání souborů.",
         variant: "destructive"
       });
+      onUploadProgress && onUploadProgress(null);
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
