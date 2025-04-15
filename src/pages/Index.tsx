@@ -68,12 +68,12 @@ const Index = () => {
       }
 
       particles.forEach(particle => {
-        // Slower natural movement (reduced speed)
-        particle.x += Math.cos(particle.angle) * (particle.speed * 0.5); // Reduced speed by half
-        particle.y += Math.sin(particle.angle) * (particle.speed * 0.5);
+        // Even slower natural movement
+        particle.x += Math.cos(particle.angle) * (particle.speed * 0.3);
+        particle.y += Math.sin(particle.angle) * (particle.speed * 0.3);
         
         // Slightly change angle for organic movement (reduced angle change)
-        particle.angle += (Math.random() - 0.5) * 0.02; // Reduced angle change
+        particle.angle += (Math.random() - 0.5) * 0.01;
         
         // Mouse/touch repulsion
         const dx = mouseX - particle.x;
@@ -109,7 +109,7 @@ const Index = () => {
 
         // Calculate opacity based on vertical position (fade out at top and bottom)
         const distanceFromCenter = Math.abs((particle.y / canvas.height) - 0.5) * 2;
-        const opacity = 1 - Math.pow(distanceFromCenter, 1.5); // Adjusted power for smoother fade
+        const opacity = 1 - Math.pow(distanceFromCenter, 1.5);
         const color = particle.color.replace('0.8', opacity.toString());
         
         // Don't render particles that would overlap with the header
