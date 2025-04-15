@@ -10,7 +10,6 @@ export default function Header() {
   const [gradientPosition, setGradientPosition] = useState(0);
   const [themeButtonAnimating, setThemeButtonAnimating] = useState(false);
 
-  // Extremely slow gradient change
   useEffect(() => {
     const interval = setInterval(() => {
       setGradientPosition(prev => (prev + 0.1) % 200);
@@ -28,40 +27,35 @@ export default function Header() {
     <div className="relative z-20">
       {isMinimized ? (
         <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full w-10 h-10 bg-white/50 hover:bg-white/60 shadow-md border border-white/30 transition-all duration-300 mt-2"
+          <button
             onClick={() => setIsMinimized(false)}
-          >
-            <Minus className="h-5 w-5 text-gray-800" />
-          </Button>
+            className="w-16 h-1 bg-white/50 hover:bg-white/60 rounded-full shadow-md border border-white/30 transition-all duration-300 mt-2"
+          />
         </div>
       ) : (
         <header 
-          className="w-full p-4 rounded-3xl shadow-lg mt-6 mx-auto max-w-5xl border border-white/50 transition-all duration-300 overflow-hidden"
+          className="w-full p-6 rounded-3xl shadow-lg mt-6 mx-auto max-w-5xl border border-white/30 transition-all duration-300 overflow-hidden"
           style={{
-            background: `linear-gradient(${gradientPosition}deg, #9b87f5, #33C3F0, #6E59A5, #9b87f5)`
+            background: `linear-gradient(${gradientPosition}deg, #9b87f5, #33C3F0, #6E59A5, #9b87f5)`,
+            backgroundSize: '400% 400%'
           }}
         >
-          <div className="container mx-auto flex justify-center items-center relative">
-            <h1 className="text-2xl font-bold text-white absolute left-0">
+          <div className="container mx-auto flex justify-center items-center relative py-2">
+            <h1 className="text-3xl font-bold text-white absolute left-0">
               Fotky 9.C
             </h1>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300 absolute top-0"
+            <button
               onClick={() => setIsMinimized(true)}
-            >
-              <Minus className="h-5 w-5 text-white" />
-            </Button>
+              className="w-16 h-1 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-300 absolute top-1/2 -translate-y-1/2"
+            />
 
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300 absolute right-0 ${themeButtonAnimating ? 'animate-spin' : ''}`}
+              className={`rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300 absolute right-0 ${
+                themeButtonAnimating ? 'animate-spin' : ''
+              }`}
               onClick={handleThemeToggle}
             >
               {theme === "dark" ? (

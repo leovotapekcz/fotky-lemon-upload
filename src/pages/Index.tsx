@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import FileUpload from "@/components/FileUpload";
 import Footer from "@/components/Footer";
@@ -69,12 +68,12 @@ const Index = () => {
       }
 
       particles.forEach(particle => {
-        // Natural movement
-        particle.x += Math.cos(particle.angle) * particle.speed;
-        particle.y += Math.sin(particle.angle) * particle.speed;
+        // Slower natural movement (reduced speed)
+        particle.x += Math.cos(particle.angle) * (particle.speed * 0.5); // Reduced speed by half
+        particle.y += Math.sin(particle.angle) * (particle.speed * 0.5);
         
-        // Slightly change angle for organic movement
-        particle.angle += (Math.random() - 0.5) * 0.05;
+        // Slightly change angle for organic movement (reduced angle change)
+        particle.angle += (Math.random() - 0.5) * 0.02; // Reduced angle change
         
         // Mouse/touch repulsion
         const dx = mouseX - particle.x;
@@ -110,7 +109,7 @@ const Index = () => {
 
         // Calculate opacity based on vertical position (fade out at top and bottom)
         const distanceFromCenter = Math.abs((particle.y / canvas.height) - 0.5) * 2;
-        const opacity = 1 - Math.pow(distanceFromCenter, 2);
+        const opacity = 1 - Math.pow(distanceFromCenter, 1.5); // Adjusted power for smoother fade
         const color = particle.color.replace('0.8', opacity.toString());
         
         // Don't render particles that would overlap with the header
