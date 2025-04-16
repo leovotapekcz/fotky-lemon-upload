@@ -1,4 +1,3 @@
-
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ export default function Header() {
         <div className="flex justify-center">
           <button
             onClick={() => setIsMinimized(false)}
-            className="w-16 h-1 bg-white/50 hover:bg-white/60 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-1 animate-fade-in"
+            className="w-24 h-2 bg-sky-blue-500/60 hover:bg-sky-blue-500/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-2 animate-fade-in"
           />
         </div>
       ) : (
