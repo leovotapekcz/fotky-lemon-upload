@@ -48,13 +48,13 @@ export default function Header() {
 
             <button
               onClick={() => setIsMinimized(true)}
-              className="absolute left-1/2 transform -translate-x-1/2 bottom-[-16px] w-16 h-1 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-300"
+              className="absolute left-1/2 transform -translate-x-1/2 bottom-[-24px] w-16 h-1 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-300"
             />
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className={`rounded-full w-10 h-10 bg-white/20 hover:bg-white/30 transition-all duration-300 absolute right-0 ${
+              className={`rounded-full w-10 h-10 bg-white/30 hover:bg-white/40 border-2 border-white/50 shadow-lg transition-all duration-300 absolute right-0 ${
                 themeButtonAnimating ? 'animate-spin' : ''
               }`}
               onClick={handleThemeToggle}
@@ -62,7 +62,7 @@ export default function Header() {
               {theme === "dark" ? (
                 <Sun className="h-5 w-5 text-white" />
               ) : (
-                <Moon className="h-5 w-5 text-white" />
+                <Moon className="h-5 w-5 text-blue-600" />
               )}
             </Button>
           </div>
