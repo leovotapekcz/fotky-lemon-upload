@@ -1,5 +1,5 @@
-
 import { useEffect, RefObject } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Particle {
   x: number;
@@ -16,6 +16,8 @@ export const useParticleAnimation = (
   canvasRef: RefObject<HTMLCanvasElement>,
   headerHeight: number = 0
 ) => {
+  const isMobile = useIsMobile();
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -35,12 +37,15 @@ export const useParticleAnimation = (
       canvas.height = window.innerHeight;
       headerElement = document.querySelector('header');
       
-      particles = Array.from({ length: 120 }, () => {
+      // Reduce particle count on mobile
+      const particleCount = isMobile ? 60 : 120;
+      
+      particles = Array.from({ length: particleCount }, () => {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         const hue = (x / canvas.width) * 60 + 200;
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 0.5 + 0.1;
+        const speed = Math.random() * 0.3 + 0.05; // Slower movement
         
         return {
           x,
