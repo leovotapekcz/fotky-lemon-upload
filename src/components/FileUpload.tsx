@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
@@ -25,19 +24,19 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
     onUploadProgress && onUploadProgress(0);
     
     try {
-      // Simulate upload progress
+      // Simulate faster upload progress
       let progress = 0;
       const interval = setInterval(() => {
-        progress += Math.random() * 10;
+        progress += Math.random() * 20; // Increased speed
         if (progress >= 100) {
           progress = 100;
           clearInterval(interval);
         }
         onUploadProgress && onUploadProgress(progress);
-      }, 200);
+      }, 100); // Faster interval
       
-      // Simulate network request
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Simulate faster network request
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Reduced time
       clearInterval(interval);
       onUploadProgress && onUploadProgress(100);
       
@@ -47,7 +46,7 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
           title: "Soubory nahrány",
           description: `${files.length} ${files.length === 1 ? 'soubor byl nahrán' : 'soubory byly nahrány'} úspěšně.`
         });
-      }, 500);
+      }, 300); // Reduced time
     } catch (error) {
       toast({
         title: "Chyba",
@@ -71,6 +70,8 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
         onChange={handleFileSelect}
         className="hidden"
         multiple
+        accept="image/*"
+        max="400"
       />
       <Button
         size="lg"

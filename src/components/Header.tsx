@@ -47,7 +47,7 @@ export default function Header() {
 
             <button
               onClick={() => setIsMinimized(true)}
-              className="absolute left-1/2 transform -translate-x-1/2 bottom-[-24px] w-16 h-1 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-300"
+              className="absolute left-1/2 transform -translate-x-1/2 top-[-8px] w-24 h-2 bg-sky-blue-500/90 hover:bg-sky-blue-500 rounded-full transition-all duration-300"
             />
 
             <Button
