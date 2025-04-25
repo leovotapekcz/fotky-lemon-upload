@@ -1,3 +1,4 @@
+
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ export default function Header() {
 
             <button
               onClick={() => setIsMinimized(true)}
-              className="absolute left-1/2 transform -translate-x-1/2 top-[-8px] w-24 h-2 bg-sky-blue-500/90 hover:bg-sky-blue-500 rounded-full transition-all duration-300"
+              className="absolute left-1/2 transform -translate-x-1/2 top-[-12px] w-28 h-3 bg-sky-blue-500 hover:bg-sky-blue-600 rounded-full shadow-lg transition-all duration-300 border-2 border-white/50"
             />
 
             <Button
