@@ -2,7 +2,8 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface FileUploadProps {
   onUploadProgress?: (progress: number | null) => void;
@@ -12,6 +13,7 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { language, t } = useLanguage();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -44,14 +46,16 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
       setTimeout(() => {
         onUploadProgress && onUploadProgress(null);
         toast({
-          title: "Soubory nahrány",
-          description: `${files.length} ${files.length === 1 ? 'soubor byl nahrán' : 'soubory byly nahrány'} úspěšně.`
+          title: language === "uk" ? "Файли завантажено" : "Soubory nahrány",
+          description: language === "uk" 
+            ? `${files.length} ${files.length === 1 ? 'файл завантажено' : 'файлів завантажено'} успішно.`
+            : `${files.length} ${files.length === 1 ? 'soubor byl nahrán' : 'soubory byly nahrány'} úspěšně.`
         });
       }, 200); // Shorter display time
     } catch (error) {
       toast({
-        title: "Chyba",
-        description: "Nastala chyba při nahrávání souborů.",
+        title: language === "uk" ? "Помилка" : "Chyba",
+        description: language === "uk" ? "Сталася помилка під час завантаження файлів." : "Nastala chyba při nahrávání souborů.",
         variant: "destructive"
       });
       onUploadProgress && onUploadProgress(null);
@@ -72,7 +76,6 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
         className="hidden"
         multiple
         accept="image/*"
-        max={400} // Fixed attribute to use proper JSX syntax
       />
       <Button
         size="lg"
@@ -81,7 +84,7 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
         className="bg-purple-500 hover:bg-purple-600 text-white rounded-lg px-8 py-6 text-xl flex items-center gap-3 transform hover:scale-105 transition-all active:scale-95 hover:shadow-xl"
       >
         <Upload className="w-6 h-6 animate-bounce" />
-        {uploading ? "Nahrávání..." : "Nahraj jakékoli soubory"}
+        {uploading ? t("uploading") : t("uploadButton")}
       </Button>
     </div>
   );

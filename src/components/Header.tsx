@@ -1,19 +1,21 @@
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Languages } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const [isMinimized, setIsMinimized] = useState(false);
   const [gradientPosition, setGradientPosition] = useState(0);
   const [themeButtonAnimating, setThemeButtonAnimating] = useState(false);
+  const { language, toggleLanguage } = useLanguage();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setGradientPosition(prev => (prev + 0.5) % 200); // Increased animation speed
-    }, 50); // Faster interval
+      setGradientPosition(prev => (prev + 0.5) % 200);
+    }, 50);
     return () => clearInterval(interval);
   }, []);
 
@@ -23,13 +25,20 @@ export default function Header() {
     setTimeout(() => setThemeButtonAnimating(false), 1000);
   };
 
+  const translations = {
+    title: {
+      uk: "Фотки 9.C",
+      cs: "Fotky 9.C"
+    }
+  };
+
   return (
     <div className="relative z-20">
       {isMinimized ? (
         <div className="flex justify-center">
           <button
             onClick={() => setIsMinimized(false)}
-            className="w-24 h-2 bg-sky-blue-500/60 hover:bg-sky-blue-500/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-2 animate-fade-in"
+            className="w-24 h-2 bg-white hover:bg-white/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-2 animate-fade-in"
           />
         </div>
       ) : (
@@ -43,28 +52,43 @@ export default function Header() {
         >
           <div className="container mx-auto flex justify-center items-center relative py-2">
             <h1 className="text-3xl font-bold text-white absolute left-0">
-              Fotky 9.C
+              {translations.title[language]}
             </h1>
 
             <button
               onClick={() => setIsMinimized(true)}
-              className="absolute left-1/2 transform -translate-x-1/2 top-[-12px] w-28 h-3 bg-sky-blue-500 hover:bg-sky-blue-600 rounded-full shadow-lg transition-all duration-300 border-2 border-white/50"
+              className="absolute left-1/2 transform -translate-x-1/2 bottom-[-25px] w-28 h-3 bg-white hover:bg-white/90 rounded-full shadow-lg transition-all duration-300 border-2 border-white/50"
             />
 
-            <Button
-              variant="outline"
-              size="icon"
-              className={`rounded-full w-10 h-10 bg-white/30 hover:bg-white/40 border-2 border-white/50 shadow-lg transition-all duration-300 absolute right-0 ${
-                themeButtonAnimating ? 'animate-spin' : ''
-              }`}
-              onClick={handleThemeToggle}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5 text-white" />
-              ) : (
-                <Moon className="h-5 w-5 text-blue-600" />
-              )}
-            </Button>
+            <div className="flex gap-2 absolute right-0">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full w-10 h-10 bg-white/30 hover:bg-white/40 border-2 border-white/50 shadow-lg transition-all duration-300"
+                onClick={toggleLanguage}
+              >
+                {language === "cs" ? (
+                  <span className="text-lg font-bold">🇺🇦</span>
+                ) : (
+                  <span className="text-lg font-bold">🇨🇿</span>
+                )}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="icon"
+                className={`rounded-full w-10 h-10 bg-white/30 hover:bg-white/40 border-2 border-white/50 shadow-lg transition-all duration-300 ${
+                  themeButtonAnimating ? 'animate-spin' : ''
+                }`}
+                onClick={handleThemeToggle}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5 text-white" />
+                ) : (
+                  <Moon className="h-5 w-5 text-blue-600" />
+                )}
+              </Button>
+            </div>
           </div>
         </header>
       )}
