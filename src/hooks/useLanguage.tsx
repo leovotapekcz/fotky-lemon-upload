@@ -1,5 +1,5 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, createContext, useContext } from 'react';
 
 type Language = 'uk' | 'cs';
 
@@ -45,6 +45,10 @@ const translations = {
   rejected: {
     uk: "Відхилено",
     cs: "Odmítnuto"
+  },
+  songAdded: {
+    uk: "Пісню додано",
+    cs: "Píseň přidána"
   }
 };
 
