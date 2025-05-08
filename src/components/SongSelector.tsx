@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, X, Search, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { youtube } from "lucide-react";
 
 interface Song {
   id: string;
@@ -29,44 +30,62 @@ export default function SongSelector() {
   const resultsContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Mock search results based on query
-  const searchSongs = (query: string) => {
+  // Function to search YouTube
+  const searchYouTube = async (query: string) => {
+    if (query.trim() === "") {
+      setSearchResults([]);
+      return;
+    }
+    
     setIsSearching(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      // Generate mock results
-      const results: Song[] = [];
+    try {
+      // YouTube Data API v3 key would normally go here
+      // This is a mock implementation since we can't store API keys in the frontend
+      // In production, this would be a server-side API call
       
-      if (query.trim() !== "") {
-        // YouTube-like results
-        for (let i = 1; i <= 5; i++) {
-          results.push({
-            id: `yt-${i}-${Date.now()}`,
-            title: `${query} - Song ${i}`,
-            artist: `Artist ${i}`,
-            thumbnail: `https://picsum.photos/seed/${query}${i}/200/200`,
-            source: "youtube",
-            votes: { accepted: [], rejected: [] }
-          });
-        }
-        
-        // Spotify-like results
-        for (let i = 1; i <= 3; i++) {
-          results.push({
-            id: `sp-${i}-${Date.now()}`,
-            title: `${query} Mix ${i}`,
-            artist: `DJ ${i}`,
-            thumbnail: `https://picsum.photos/seed/spot${query}${i}/200/200`,
-            source: "spotify",
-            votes: { accepted: [], rejected: [] }
-          });
-        }
+      console.log("Searching YouTube for:", query);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Generate YouTube-like results
+      const youtubeResults: Song[] = [];
+      for (let i = 1; i <= 5; i++) {
+        youtubeResults.push({
+          id: `yt-${i}-${Date.now()}`,
+          title: `${query} - ${i === 1 ? "Official Video" : `Cover ${i}`}`,
+          artist: `Artist ${String.fromCharCode(64 + i)}`,
+          thumbnail: `https://picsum.photos/seed/${query}${i}/200/200`,
+          source: "youtube",
+          votes: { accepted: [], rejected: [] }
+        });
       }
       
-      setSearchResults(results);
+      // Generate Spotify-like results
+      const spotifyResults: Song[] = [];
+      for (let i = 1; i <= 3; i++) {
+        spotifyResults.push({
+          id: `sp-${i}-${Date.now()}`,
+          title: `${query} ${i === 1 ? "Radio" : `Mix ${i}`}`,
+          artist: `DJ ${String.fromCharCode(64 + i)}`,
+          thumbnail: `https://picsum.photos/seed/spot${query}${i}/200/200`,
+          source: "spotify",
+          votes: { accepted: [], rejected: [] }
+        });
+      }
+      
+      setSearchResults([...youtubeResults, ...spotifyResults]);
+    } catch (error) {
+      console.error("YouTube search error:", error);
+      toast({
+        title: "Search Error",
+        description: "Failed to search YouTube. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSearching(false);
-    }, 500);
+    }
   };
 
   const handleSubmit = () => {
@@ -123,7 +142,7 @@ export default function SongSelector() {
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
       if (searchQuery.trim()) {
-        searchSongs(searchQuery);
+        searchYouTube(searchQuery);
       } else {
         setSearchResults([]);
       }
@@ -144,7 +163,7 @@ export default function SongSelector() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("search")}
-            className={`pl-10 pr-4 py-3 text-lg transition-all duration-300 border-2 ${
+            className={`pl-10 pr-4 py-3 text-lg transition-all duration-300 border-2 rounded-full ${
               selectedSong ? "border-purple-500" : ""
             }`}
           />
@@ -154,36 +173,49 @@ export default function SongSelector() {
         {searchResults.length > 0 && !selectedSong && (
           <div 
             ref={resultsContainerRef}
-            className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto"
+            className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto"
           >
-            {searchResults.map((song) => (
-              <div
-                key={song.id}
-                className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                onClick={() => setSelectedSong(song)}
-              >
-                <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 mr-3">
-                  <img src={song.thumbnail} alt={song.title} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                    {song.source === "youtube" ? "YouTube" : "Spotify"} • {song.artist}
-                  </p>
-                </div>
+            {isSearching ? (
+              <div className="flex items-center justify-center p-4">
+                <div className="animate-spin h-5 w-5 border-2 border-purple-500 rounded-full border-t-transparent mr-2"></div>
+                <p>Searching...</p>
               </div>
-            ))}
+            ) : (
+              searchResults.map((song) => (
+                <div
+                  key={song.id}
+                  className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  onClick={() => setSelectedSong(song)}
+                >
+                  <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 mr-3">
+                    <img src={song.thumbnail} alt={song.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                      {song.source === "youtube" ? (
+                        <>
+                          <youtube className="w-4 h-4 mr-1 text-red-500" /> YouTube
+                        </>
+                      ) : (
+                        "Spotify"
+                      )} • {song.artist}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
       
       {selectedSong && (
         <div 
-          className={`mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700 flex items-start transition-all duration-500 animate-fade-in ${
+          className={`mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-2xl border border-purple-200 dark:border-purple-700 flex items-start transition-all duration-500 animate-fade-in ${
             isSubmitting ? "opacity-50 scale-95" : ""
           }`}
         >
-          <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0 mr-4">
+          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4">
             <img src={selectedSong.thumbnail} alt={selectedSong.title} className="w-full h-full object-cover" />
           </div>
           <div className="flex-1">
@@ -191,7 +223,7 @@ export default function SongSelector() {
             <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSong.artist}</p>
             <p className="text-xs mt-1">
               {selectedSong.source === "youtube" ? (
-                <span className="text-red-500">YouTube</span>
+                <span className="flex items-center text-red-500"><youtube className="w-3 h-3 mr-1" /> YouTube</span>
               ) : (
                 <span className="text-green-500">Spotify</span>
               )}
@@ -209,7 +241,7 @@ export default function SongSelector() {
             <Button 
               onClick={handleSubmit} 
               disabled={isSubmitting}
-              className="bg-purple-500 hover:bg-purple-600 text-white"
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full"
             >
               {t("submit")}
             </Button>
@@ -232,9 +264,9 @@ export default function SongSelector() {
               return (
                 <div
                   key={song.id}
-                  className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow border-l-4 border-transparent hover:border-l-purple-500 transition-all duration-300"
+                  className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow border-l-4 border-transparent hover:border-l-purple-500 transition-all duration-300"
                 >
-                  <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 mr-3">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 mr-3">
                     <img src={song.thumbnail} alt={song.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0 mr-4">
@@ -284,3 +316,4 @@ export default function SongSelector() {
     </div>
   );
 }
+

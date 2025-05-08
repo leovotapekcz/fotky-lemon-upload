@@ -30,7 +30,7 @@ const Index = () => {
         <FileUpload onUploadProgress={setUploadProgress} />
         
         {isDragging && (
-          <div className="absolute inset-0 bg-purple-500/20 backdrop-blur-sm flex items-center justify-center rounded-lg border-4 border-purple-400 border-dashed z-20">
+          <div className="absolute inset-0 bg-purple-500/20 backdrop-blur-sm flex items-center justify-center rounded-2xl border-4 border-purple-400 border-dashed z-20">
             <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
               {t("dragHere")}
             </p>
