@@ -3,9 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, X, Search, Music } from "lucide-react";
+import { Check, X, Search, Music, Youtube } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { youtube } from "lucide-react";
 
 interface Song {
   id: string;
@@ -195,7 +194,7 @@ export default function SongSelector() {
                     <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                       {song.source === "youtube" ? (
                         <>
-                          <youtube className="w-4 h-4 mr-1 text-red-500" /> YouTube
+                          <Youtube className="w-4 h-4 mr-1 text-red-500" /> YouTube
                         </>
                       ) : (
                         "Spotify"
@@ -223,7 +222,7 @@ export default function SongSelector() {
             <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSong.artist}</p>
             <p className="text-xs mt-1">
               {selectedSong.source === "youtube" ? (
-                <span className="flex items-center text-red-500"><youtube className="w-3 h-3 mr-1" /> YouTube</span>
+                <span className="flex items-center text-red-500"><Youtube className="w-3 h-3 mr-1" /> YouTube</span>
               ) : (
                 <span className="text-green-500">Spotify</span>
               )}
@@ -316,4 +315,3 @@ export default function SongSelector() {
     </div>
   );
 }
-
