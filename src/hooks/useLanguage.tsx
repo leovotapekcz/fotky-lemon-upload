@@ -38,6 +38,10 @@ const translations = {
     uk: "Відправити",
     cs: "Odeslat"
   },
+  submitting: {
+    uk: "Відправляється...",
+    cs: "Odesílání..."
+  },
   accepted: {
     uk: "Прийнято",
     cs: "Přijato"
@@ -49,6 +53,26 @@ const translations = {
   songAdded: {
     uk: "Пісню додано",
     cs: "Píseň přidána"
+  },
+  songs: {
+    uk: "пісні",
+    cs: "písní"
+  },
+  song: {
+    uk: "пісня",
+    cs: "píseň"
+  },
+  searching: {
+    uk: "Пошук...",
+    cs: "Vyhledávání..."
+  },
+  searchError: {
+    uk: "Помилка пошуку",
+    cs: "Chyba hledání"
+  },
+  searchErrorDescription: {
+    uk: "Не вдалося знайти пісні. Спробуйте знову.",
+    cs: "Nepodařilo se najít písně. Zkuste to znovu."
   }
 };
 

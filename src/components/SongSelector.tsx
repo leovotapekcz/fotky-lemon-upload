@@ -3,20 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, X, Search, Music, Youtube } from "lucide-react";
+import { Check, X, Search, Youtube, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Song {
-  id: string;
-  title: string;
-  artist: string;
-  thumbnail: string;
-  source: "youtube" | "spotify";
-  votes: {
-    accepted: string[];
-    rejected: string[];
-  };
-}
+import { searchSongs } from "@/services/songService";
+import { Song } from "@/types/song";
 
 export default function SongSelector() {
   const { language, t } = useLanguage();
@@ -26,61 +16,29 @@ export default function SongSelector() {
   const [submittedSongs, setSubmittedSongs] = useState<Song[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Function to search YouTube
-  const searchYouTube = async (query: string) => {
-    if (query.trim() === "") {
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
       setSearchResults([]);
       return;
     }
     
     setIsSearching(true);
+    setError(null);
     
     try {
-      // YouTube Data API v3 key would normally go here
-      // This is a mock implementation since we can't store API keys in the frontend
-      // In production, this would be a server-side API call
-      
-      console.log("Searching YouTube for:", query);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Generate YouTube-like results
-      const youtubeResults: Song[] = [];
-      for (let i = 1; i <= 5; i++) {
-        youtubeResults.push({
-          id: `yt-${i}-${Date.now()}`,
-          title: `${query} - ${i === 1 ? "Official Video" : `Cover ${i}`}`,
-          artist: `Artist ${String.fromCharCode(64 + i)}`,
-          thumbnail: `https://picsum.photos/seed/${query}${i}/200/200`,
-          source: "youtube",
-          votes: { accepted: [], rejected: [] }
-        });
-      }
-      
-      // Generate Spotify-like results
-      const spotifyResults: Song[] = [];
-      for (let i = 1; i <= 3; i++) {
-        spotifyResults.push({
-          id: `sp-${i}-${Date.now()}`,
-          title: `${query} ${i === 1 ? "Radio" : `Mix ${i}`}`,
-          artist: `DJ ${String.fromCharCode(64 + i)}`,
-          thumbnail: `https://picsum.photos/seed/spot${query}${i}/200/200`,
-          source: "spotify",
-          votes: { accepted: [], rejected: [] }
-        });
-      }
-      
-      setSearchResults([...youtubeResults, ...spotifyResults]);
-    } catch (error) {
-      console.error("YouTube search error:", error);
+      const results = await searchSongs(query, language);
+      setSearchResults(results);
+    } catch (err) {
+      console.error("Search error:", err);
+      setError(t("searchError"));
       toast({
-        title: "Search Error",
-        description: "Failed to search YouTube. Please try again.",
-        variant: "destructive"
+        title: t("searchError"),
+        description: t("searchErrorDescription"),
+        variant: "destructive",
       });
     } finally {
       setIsSearching(false);
@@ -137,18 +95,35 @@ export default function SongSelector() {
     );
   };
 
-  // Handle search when query changes
+  // Handle search when query changes with debouncing
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
       if (searchQuery.trim()) {
-        searchYouTube(searchQuery);
+        handleSearch(searchQuery);
       } else {
         setSearchResults([]);
       }
-    }, 300);
+    }, 500); // Increased debounce time for better performance
     
     return () => clearTimeout(debounceTimeout);
-  }, [searchQuery]);
+  }, [searchQuery, language]);
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        resultsContainerRef.current && 
+        !resultsContainerRef.current.contains(event.target as Node) &&
+        searchResults.length > 0 &&
+        !selectedSong
+      ) {
+        setSearchResults([]);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchResults, selectedSong]);
 
   return (
     <div className="w-full max-w-xl mx-auto mt-8">
@@ -165,6 +140,7 @@ export default function SongSelector() {
             className={`pl-10 pr-4 py-3 text-lg transition-all duration-300 border-2 rounded-full ${
               selectedSong ? "border-purple-500" : ""
             }`}
+            disabled={isSubmitting}
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
         </div>
@@ -172,12 +148,16 @@ export default function SongSelector() {
         {searchResults.length > 0 && !selectedSong && (
           <div 
             ref={resultsContainerRef}
-            className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto"
+            className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto animate-fade-in"
           >
             {isSearching ? (
               <div className="flex items-center justify-center p-4">
                 <div className="animate-spin h-5 w-5 border-2 border-purple-500 rounded-full border-t-transparent mr-2"></div>
-                <p>Searching...</p>
+                <p>{t("searching")}</p>
+              </div>
+            ) : error ? (
+              <div className="p-4 text-center text-red-500">
+                <p>{error}</p>
               </div>
             ) : (
               searchResults.map((song) => (
@@ -187,7 +167,15 @@ export default function SongSelector() {
                   onClick={() => setSelectedSong(song)}
                 >
                   <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 mr-3">
-                    <img src={song.thumbnail} alt={song.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={song.thumbnail} 
+                      alt={song.title} 
+                      className="w-full h-full object-cover"
+                      loading="lazy" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
+                      }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
@@ -197,7 +185,9 @@ export default function SongSelector() {
                           <Youtube className="w-4 h-4 mr-1 text-red-500" /> YouTube
                         </>
                       ) : (
-                        "Spotify"
+                        <span className="flex items-center">
+                          <Music className="w-4 h-4 mr-1 text-green-500" /> Spotify
+                        </span>
                       )} • {song.artist}
                     </p>
                   </div>
@@ -215,7 +205,14 @@ export default function SongSelector() {
           }`}
         >
           <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4">
-            <img src={selectedSong.thumbnail} alt={selectedSong.title} className="w-full h-full object-cover" />
+            <img 
+              src={selectedSong.thumbnail} 
+              alt={selectedSong.title} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
+              }}
+            />
           </div>
           <div className="flex-1">
             <p className="font-medium text-gray-900 dark:text-gray-100">{selectedSong.title}</p>
@@ -224,7 +221,7 @@ export default function SongSelector() {
               {selectedSong.source === "youtube" ? (
                 <span className="flex items-center text-red-500"><Youtube className="w-3 h-3 mr-1" /> YouTube</span>
               ) : (
-                <span className="text-green-500">Spotify</span>
+                <span className="flex items-center text-green-500"><Music className="w-3 h-3 mr-1" /> Spotify</span>
               )}
             </p>
           </div>
@@ -234,6 +231,7 @@ export default function SongSelector() {
               size="icon" 
               onClick={() => setSelectedSong(null)}
               className="rounded-full h-8 w-8"
+              disabled={isSubmitting}
             >
               <X size={16} />
             </Button>
@@ -242,7 +240,12 @@ export default function SongSelector() {
               disabled={isSubmitting}
               className="bg-purple-500 hover:bg-purple-600 text-white rounded-full"
             >
-              {t("submit")}
+              {isSubmitting ? (
+                <span className="flex items-center">
+                  <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent mr-2"></div>
+                  {t("submitting")}
+                </span>
+              ) : t("submit")}
             </Button>
           </div>
         </div>
@@ -251,7 +254,7 @@ export default function SongSelector() {
       {/* Submitted songs list */}
       {submittedSongs.length > 0 && (
         <div className="mt-8">
-          <h4 className="text-xl font-medium mb-3">{submittedSongs.length > 1 ? `${submittedSongs.length} Songs` : "1 Song"}</h4>
+          <h4 className="text-xl font-medium mb-3">{submittedSongs.length > 1 ? `${submittedSongs.length} ${t("songs")}` : `1 ${t("song")}`}</h4>
           <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
             {submittedSongs.map((song) => {
               const acceptCount = song.votes.accepted.length;
@@ -266,7 +269,15 @@ export default function SongSelector() {
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow border-l-4 border-transparent hover:border-l-purple-500 transition-all duration-300"
                 >
                   <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 mr-3">
-                    <img src={song.thumbnail} alt={song.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={song.thumbnail} 
+                      alt={song.title} 
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
+                      }}
+                    />
                   </div>
                   <div className="flex-1 min-w-0 mr-4">
                     <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
