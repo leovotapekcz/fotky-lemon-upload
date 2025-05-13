@@ -4,6 +4,7 @@ export interface Song {
   title: string;
   artist: string;
   thumbnail: string;
+  creator?: string;
   source: "youtube" | "spotify";
   votes: {
     accepted: string[];

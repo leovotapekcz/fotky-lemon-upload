@@ -13,6 +13,47 @@ const buildSpotifySearchUrl = (query: string) => {
   return `https://spotify-api-proxy.example.com/search?q=${encodeURIComponent(query)}`;
 };
 
+// Generate more natural song names
+const generateYouTubeSongs = (query: string): Song[] => {
+  const youtubeCreators = [
+    "VEVO", "MusicChannel", "TopHits", "MusicStudio", "SongCloud"
+  ];
+  
+  const youtubeArtists = [
+    "The Weeknd", "Dua Lipa", "Post Malone", "Billie Eilish", "Adele"
+  ];
+  
+  return Array(5).fill(null).map((_, i) => ({
+    id: `yt-${i}-${Date.now()}`,
+    title: `${query}`,
+    artist: youtubeArtists[i % youtubeArtists.length],
+    creator: youtubeCreators[i % youtubeCreators.length],
+    thumbnail: `https://picsum.photos/seed/${query.replace(/\s+/g, '')}${i}/200/200`,
+    source: "youtube",
+    votes: { accepted: [], rejected: [] }
+  }));
+};
+
+const generateSpotifySongs = (query: string): Song[] => {
+  const spotifyCreators = [
+    "Spotify", "TopPlaylists", "MusicMix", "WeeklyHits", "TrendingNow"
+  ];
+  
+  const spotifyArtists = [
+    "Drake", "Taylor Swift", "Ariana Grande", "Ed Sheeran", "Bad Bunny"
+  ];
+  
+  return Array(3).fill(null).map((_, i) => ({
+    id: `sp-${i}-${Date.now()}`,
+    title: `${query}`,
+    artist: spotifyArtists[i % spotifyArtists.length],
+    creator: spotifyCreators[i % spotifyCreators.length],
+    thumbnail: `https://picsum.photos/seed/spot${query.replace(/\s+/g, '')}${i}/200/200`,
+    source: "spotify",
+    votes: { accepted: [], rejected: [] }
+  }));
+};
+
 // Function to search for songs on YouTube and Spotify
 export async function searchSongs(query: string, language: string, platform?: string): Promise<Song[]> {
   console.log(`Searching for "${query}" in ${language}${platform ? `, platform: ${platform}` : ''}`);
@@ -28,37 +69,11 @@ export async function searchSongs(query: string, language: string, platform?: st
     let results: Song[] = [];
     
     if (!platform || platform === 'youtube') {
-      // Generate YouTube-like results based on the query
-      const youtubeResults: Song[] = [];
-      for (let i = 1; i <= 5; i++) {
-        youtubeResults.push({
-          id: `yt-${i}-${Date.now()}`,
-          title: `${query} - ${i === 1 ? "Official Video" : `Cover ${i}`}`,
-          artist: `Artist ${String.fromCharCode(64 + i)}`,
-          creator: `YouTuber ${String.fromCharCode(64 + i + 10)}`,
-          thumbnail: `https://picsum.photos/seed/${query.replace(/\s+/g, '')}${i}/200/200`,
-          source: "youtube",
-          votes: { accepted: [], rejected: [] }
-        });
-      }
-      results = [...results, ...youtubeResults];
+      results = [...results, ...generateYouTubeSongs(query)];
     }
     
     if (!platform || platform === 'spotify') {
-      // Generate Spotify-like results
-      const spotifyResults: Song[] = [];
-      for (let i = 1; i <= 3; i++) {
-        spotifyResults.push({
-          id: `sp-${i}-${Date.now()}`,
-          title: `${query} ${i === 1 ? "Radio" : `Mix ${i}`}`,
-          artist: `DJ ${String.fromCharCode(64 + i)}`,
-          creator: `Spotify ${String.fromCharCode(64 + i + 5)}`,
-          thumbnail: `https://picsum.photos/seed/spot${query.replace(/\s+/g, '')}${i}/200/200`,
-          source: "spotify",
-          votes: { accepted: [], rejected: [] }
-        });
-      }
-      results = [...results, ...spotifyResults];
+      results = [...results, ...generateSpotifySongs(query)];
     }
     
     return results;
