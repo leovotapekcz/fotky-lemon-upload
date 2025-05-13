@@ -97,6 +97,70 @@ const translations = {
   unknownCreator: {
     uk: "Невідомий творець",
     cs: "Neznámý tvůrce"
+  },
+  customPlatform: {
+    uk: "Власна платформа",
+    cs: "Vlastní platforma"
+  },
+  enterCustomPlatform: {
+    uk: "Введіть назву платформи",
+    cs: "Zadejte název platformy"
+  },
+  yourName: {
+    uk: "Ваше ім'я",
+    cs: "Vaše jméno"
+  },
+  enterYourName: {
+    uk: "Введіть ваше ім'я",
+    cs: "Zadejte své jméno"
+  },
+  comment: {
+    uk: "Коментар",
+    cs: "Komentář"
+  },
+  comments: {
+    uk: "Коментарі",
+    cs: "Komentáře"
+  },
+  enterComment: {
+    uk: "Введіть ваш коментар...",
+    cs: "Zadejte svůj komentář..."
+  },
+  addComment: {
+    uk: "Додати коментар...",
+    cs: "Přidat komentář..."
+  },
+  post: {
+    uk: "Опубліковати",
+    cs: "Odeslat"
+  },
+  commentAdded: {
+    uk: "Коментар додано",
+    cs: "Komentář přidán"
+  },
+  commentAddedDescription: {
+    uk: "Ваш коментар був успішно доданий",
+    cs: "Váš komentář byl úspěšně přidán"
+  },
+  anonymousUser: {
+    uk: "Анонімний користувач",
+    cs: "Anonymní uživatel"
+  },
+  error: {
+    uk: "Помилка",
+    cs: "Chyba"
+  },
+  enterSongTitle: {
+    uk: "Будь ласка, введіть назву пісні",
+    cs: "Prosím, zadejte název písně"
+  },
+  songTitle: {
+    uk: "Назва пісні",
+    cs: "Název písně"
+  },
+  selectPlatform: {
+    uk: "Виберіть платформу",
+    cs: "Vyberte platformu"
   }
 };
 

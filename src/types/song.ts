@@ -5,9 +5,14 @@ export interface Song {
   artist: string;
   thumbnail: string;
   creator?: string;
-  source: "youtube" | "spotify";
+  source: string;
   votes: {
     accepted: string[];
     rejected: string[];
   };
+  comments?: {
+    text: string;
+    author: string;
+    timestamp: number;
+  }[];
 }

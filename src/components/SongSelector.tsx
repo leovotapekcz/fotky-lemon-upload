@@ -7,6 +7,7 @@ import { Check, X, Search, Youtube, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { searchSongs } from "@/services/songService";
 import { Song } from "@/types/song";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, 
   SelectContent, 
@@ -15,68 +16,65 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 
+// Available platforms options
+const PLATFORMS = ["youtube", "spotify", "soundcloud", "bandcamp", "other"];
+
 export default function SongSelector() {
   const { language, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [submittedSongs, setSubmittedSongs] = useState<Song[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>(undefined);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("youtube");
+  const [customPlatform, setCustomPlatform] = useState("");
   const [creatorName, setCreatorName] = useState("");
-  const resultsContainerRef = useRef<HTMLDivElement>(null);
+  const [userName, setUserName] = useState("");
+  const [commentText, setCommentText] = useState("");
   const { toast } = useToast();
 
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
+  const handleSubmit = () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: t("error"),
+        description: t("enterSongTitle"),
+        variant: "destructive",
+      });
       return;
     }
     
-    setIsSearching(true);
-    setError(null);
+    setIsSubmitting(true);
     
-    try {
-      const results = await searchSongs(query, language, selectedPlatform);
-      setSearchResults(results);
-    } catch (err) {
-      console.error("Search error:", err);
-      setError(t("searchError"));
+    // Create a new song object
+    const newSong: Song = {
+      id: `song-${Date.now()}`,
+      title: searchQuery,
+      artist: "",
+      thumbnail: `https://picsum.photos/seed/${searchQuery.replace(/\s+/g, '')}${Math.floor(Math.random() * 100)}/200/200`,
+      creator: creatorName.trim() || t("unknownCreator"),
+      source: selectedPlatform === "other" ? customPlatform || "custom" : selectedPlatform,
+      votes: { accepted: [], rejected: [] },
+      comments: commentText.trim() ? [
+        {
+          text: commentText,
+          author: userName.trim() || t("anonymousUser"),
+          timestamp: Date.now()
+        }
+      ] : []
+    };
+    
+    setTimeout(() => {
+      setSubmittedSongs(prev => [newSong, ...prev]);
+      setSearchQuery("");
+      setCreatorName("");
+      setCommentText("");
+      setIsSubmitting(false);
+      
       toast({
-        title: t("searchError"),
-        description: t("searchErrorDescription"),
-        variant: "destructive",
+        title: t("songAdded"),
+        description: `${newSong.title}`,
       });
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedSong) {
-      setIsSubmitting(true);
-      
-      // If creator name is provided, update the selected song
-      const updatedSong = creatorName.trim() 
-        ? { ...selectedSong, creator: creatorName } 
-        : selectedSong;
-      
-      setTimeout(() => {
-        setSubmittedSongs(prev => [updatedSong, ...prev]);
-        setSelectedSong(null);
-        setSearchQuery("");
-        setSearchResults([]);
-        setCreatorName("");
-        setIsSubmitting(false);
-        
-        toast({
-          title: t("songAdded"),
-          description: `${updatedSong.title} by ${updatedSong.artist}`,
-        });
-      }, 300);
-    }
+    }, 300);
   };
 
   const handleVote = (songId: string, vote: 'accept' | 'reject') => {
@@ -110,35 +108,33 @@ export default function SongSelector() {
     );
   };
 
-  // Handle search when query changes with debouncing
-  useEffect(() => {
-    const debounceTimeout = setTimeout(() => {
-      if (searchQuery.trim()) {
-        handleSearch(searchQuery);
-      } else {
-        setSearchResults([]);
-      }
-    }, 500); // Increased debounce time for better performance
+  const addComment = (songId: string) => {
+    if (!commentText.trim()) return;
     
-    return () => clearTimeout(debounceTimeout);
-  }, [searchQuery, language, selectedPlatform]);
-
-  // Close search results when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        resultsContainerRef.current && 
-        !resultsContainerRef.current.contains(event.target as Node) &&
-        searchResults.length > 0 &&
-        !selectedSong
-      ) {
-        setSearchResults([]);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [searchResults, selectedSong]);
+    setSubmittedSongs(prev => 
+      prev.map(song => {
+        if (song.id === songId) {
+          const newComment = {
+            text: commentText,
+            author: userName.trim() || t("anonymousUser"),
+            timestamp: Date.now()
+          };
+          
+          return {
+            ...song,
+            comments: [...(song.comments || []), newComment]
+          };
+        }
+        return song;
+      })
+    );
+    
+    setCommentText("");
+    toast({
+      title: t("commentAdded"),
+      description: t("commentAddedDescription"),
+    });
+  };
 
   return (
     <div className="w-full max-w-xl mx-auto mt-8">
@@ -146,153 +142,103 @@ export default function SongSelector() {
         {t("chooseSong")}
       </h3>
 
-      {/* Platform selector */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t("platform")}
-        </label>
-        <Select
-          value={selectedPlatform}
-          onValueChange={(value) => setSelectedPlatform(value === "all" ? undefined : value)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("allPlatforms")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("allPlatforms")}</SelectItem>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="spotify">Spotify</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="relative">
-        <div className="relative">
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("search")}
-            className={`pl-10 pr-4 py-3 text-lg transition-all duration-300 border-2 rounded-full ${
-              selectedSong ? "border-purple-500" : ""
-            }`}
-            disabled={isSubmitting}
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-        </div>
-        
-        {searchResults.length > 0 && !selectedSong && (
-          <div 
-            ref={resultsContainerRef}
-            className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto animate-fade-in"
-          >
-            {isSearching ? (
-              <div className="flex items-center justify-center p-4">
-                <div className="animate-spin h-5 w-5 border-2 border-purple-500 rounded-full border-t-transparent mr-2"></div>
-                <p>{t("searching")}</p>
-              </div>
-            ) : error ? (
-              <div className="p-4 text-center text-red-500">
-                <p>{error}</p>
-              </div>
-            ) : (
-              searchResults.map((song) => (
-                <div
-                  key={song.id}
-                  className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                  onClick={() => setSelectedSong(song)}
-                >
-                  <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 mr-3">
-                    <img 
-                      src={song.thumbnail} 
-                      alt={song.title} 
-                      className="w-full h-full object-cover"
-                      loading="lazy" 
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{t("by")} {song.artist}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                      {song.source === "youtube" ? (
-                        <span className="flex items-center">
-                          <Youtube className="w-4 h-4 mr-1 text-red-500" /> YouTube
-                        </span>
-                      ) : (
-                        <span className="flex items-center">
-                          <Music className="w-4 h-4 mr-1 text-green-500" /> Spotify
-                        </span>
-                      )} • {song.creator || t("unknownCreator")}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-      
-      {selectedSong && (
-        <div 
-          className={`mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-2xl border border-purple-200 dark:border-purple-700 flex flex-col transition-all duration-500 animate-fade-in ${
-            isSubmitting ? "opacity-50 scale-95" : ""
-          }`}
-        >
-          <div className="flex items-start mb-3">
-            <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4">
-              <img 
-                src={selectedSong.thumbnail} 
-                alt={selectedSong.title} 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
-                }}
-              />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900 dark:text-gray-100">{selectedSong.title}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSong.artist}</p>
-              <p className="text-xs mt-1">
-                {selectedSong.source === "youtube" ? (
-                  <span className="flex items-center text-red-500"><Youtube className="w-3 h-3 mr-1" /> YouTube</span>
-                ) : (
-                  <span className="flex items-center text-green-500"><Music className="w-3 h-3 mr-1" /> Spotify</span>
-                )}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setSelectedSong(null)}
-                className="rounded-full h-8 w-8"
-                disabled={isSubmitting}
-              >
-                <X size={16} />
-              </Button>
-            </div>
+      {/* Song creation form */}
+      <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow mb-8">
+        <div className="space-y-4">
+          {/* Song title input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("songTitle")}
+            </label>
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("enterSongTitle")}
+              className="w-full"
+            />
           </div>
           
-          {/* Creator input field */}
-          <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          {/* Platform selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("platform")}
+            </label>
+            <Select
+              value={selectedPlatform}
+              onValueChange={setSelectedPlatform}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t("selectPlatform")} />
+              </SelectTrigger>
+              <SelectContent>
+                {PLATFORMS.map(platform => (
+                  <SelectItem key={platform} value={platform}>
+                    {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Custom platform input (shows only when "other" is selected) */}
+          {selectedPlatform === "other" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t("customPlatform")}
+              </label>
+              <Input
+                value={customPlatform}
+                onChange={(e) => setCustomPlatform(e.target.value)}
+                placeholder={t("enterCustomPlatform")}
+                className="w-full"
+              />
+            </div>
+          )}
+          
+          {/* Creator input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t("creator")}
             </label>
             <Input
               value={creatorName}
               onChange={(e) => setCreatorName(e.target.value)}
-              placeholder={selectedSong.creator || t("enterCreator")}
+              placeholder={t("enterCreator")}
               className="w-full"
-              disabled={isSubmitting}
             />
           </div>
-
+          
+          {/* User name for comments */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("yourName")}
+            </label>
+            <Input
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder={t("enterYourName")}
+              className="w-full"
+            />
+          </div>
+          
+          {/* Comment textarea */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("comment")}
+            </label>
+            <Textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={t("enterComment")}
+              className="w-full min-h-[80px]"
+            />
+          </div>
+          
+          {/* Submit button */}
           <div className="flex justify-end">
             <Button 
               onClick={handleSubmit} 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !searchQuery.trim()}
               className="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-6"
             >
               {isSubmitting ? (
@@ -304,13 +250,13 @@ export default function SongSelector() {
             </Button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Submitted songs list */}
       {submittedSongs.length > 0 && (
         <div className="mt-8">
           <h4 className="text-xl font-medium mb-3">{submittedSongs.length > 1 ? `${submittedSongs.length} ${t("songs")}` : `1 ${t("song")}`}</h4>
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+          <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
             {submittedSongs.map((song) => {
               const acceptCount = song.votes.accepted.length;
               const rejectCount = song.votes.rejected.length;
@@ -321,59 +267,103 @@ export default function SongSelector() {
               return (
                 <div
                   key={song.id}
-                  className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow border-l-4 border-transparent hover:border-l-purple-500 transition-all duration-300"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow border-l-4 border-transparent hover:border-l-purple-500 transition-all duration-300"
                 >
-                  <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 mr-3">
-                    <img 
-                      src={song.thumbnail} 
-                      alt={song.title} 
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 mr-4">
-                    <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{song.artist}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {song.creator || t("unknownCreator")}
-                    </p>
+                  <div className="flex items-center p-4">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 mr-3">
+                      <img 
+                        src={song.thumbnail} 
+                        alt={song.title} 
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 mr-4">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{song.title}</p>
+                      <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">
+                          {song.source.charAt(0).toUpperCase() + song.source.slice(1)}
+                        </span>
+                        <span>{song.creator}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant={userAccepted ? "default" : "outline"}
+                        size="icon"
+                        className={`rounded-full h-8 w-8 ${
+                          userAccepted ? "bg-green-500 hover:bg-green-600" : "hover:bg-green-100 dark:hover:bg-green-900/30"
+                        }`}
+                        onClick={() => handleVote(song.id, 'accept')}
+                      >
+                        <Check size={16} className={userAccepted ? "text-white" : "text-green-500"} />
+                        {acceptCount > 0 && (
+                          <span className="absolute -bottom-1 -right-1 bg-green-100 text-green-800 text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                            {acceptCount}
+                          </span>
+                        )}
+                      </Button>
+                      
+                      <Button
+                        variant={userRejected ? "default" : "outline"}
+                        size="icon"
+                        className={`rounded-full h-8 w-8 ${
+                          userRejected ? "bg-red-500 hover:bg-red-600" : "hover:bg-red-100 dark:hover:bg-red-900/30"
+                        }`}
+                        onClick={() => handleVote(song.id, 'reject')}
+                      >
+                        <X size={16} className={userRejected ? "text-white" : "text-red-500"} />
+                        {rejectCount > 0 && (
+                          <span className="absolute -bottom-1 -right-1 bg-red-100 text-red-800 text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                            {rejectCount}
+                          </span>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center space-x-1">
-                    <Button
-                      variant={userAccepted ? "default" : "outline"}
-                      size="icon"
-                      className={`rounded-full h-8 w-8 ${
-                        userAccepted ? "bg-green-500 hover:bg-green-600" : "hover:bg-green-100 dark:hover:bg-green-900/30"
-                      }`}
-                      onClick={() => handleVote(song.id, 'accept')}
-                    >
-                      <Check size={16} className={userAccepted ? "text-white" : "text-green-500"} />
-                      {acceptCount > 0 && (
-                        <span className="absolute -bottom-1 -right-1 bg-green-100 text-green-800 text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                          {acceptCount}
-                        </span>
-                      )}
-                    </Button>
-                    
-                    <Button
-                      variant={userRejected ? "default" : "outline"}
-                      size="icon"
-                      className={`rounded-full h-8 w-8 ${
-                        userRejected ? "bg-red-500 hover:bg-red-600" : "hover:bg-red-100 dark:hover:bg-red-900/30"
-                      }`}
-                      onClick={() => handleVote(song.id, 'reject')}
-                    >
-                      <X size={16} className={userRejected ? "text-white" : "text-red-500"} />
-                      {rejectCount > 0 && (
-                        <span className="absolute -bottom-1 -right-1 bg-red-100 text-red-800 text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                          {rejectCount}
-                        </span>
-                      )}
-                    </Button>
+                  {/* Comments section */}
+                  {(song.comments && song.comments.length > 0) && (
+                    <div className="px-4 pb-3 pt-0 border-t border-gray-100 dark:border-gray-700 mt-1">
+                      <h5 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t("comments")}</h5>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {song.comments.map((comment, idx) => (
+                          <div key={idx} className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg text-sm">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-medium">{comment.author}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(comment.timestamp).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-300">{comment.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Add comment form */}
+                  <div className="px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex space-x-2">
+                      <Input
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        placeholder={t("addComment")}
+                        className="flex-grow text-sm"
+                      />
+                      <Button 
+                        size="sm"
+                        onClick={() => addComment(song.id)}
+                        disabled={!commentText.trim()}
+                        className="bg-purple-500 hover:bg-purple-600 text-white"
+                      >
+                        {t("post")}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
