@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, X, Search, Youtube, Music } from "lucide-react";
+import { Check, X, Search, Youtube, Music, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { searchSongs } from "@/services/songService";
 import { Song } from "@/types/song";
@@ -15,6 +15,11 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // Available platforms options
 const PLATFORMS = ["youtube", "spotify", "soundcloud", "bandcamp", "other"];
@@ -31,6 +36,7 @@ export default function SongSelector() {
   const [creatorName, setCreatorName] = useState("");
   const [userName, setUserName] = useState("");
   const [commentText, setCommentText] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = () => {
@@ -69,6 +75,7 @@ export default function SongSelector() {
       setCreatorName("");
       setCommentText("");
       setIsSubmitting(false);
+      setIsFormOpen(false);
       
       toast({
         title: t("songAdded"),
@@ -100,6 +107,15 @@ export default function SongSelector() {
           } else {
             newVotes[`${vote}ed`] = [...newVotes[`${vote}ed`], userId];
           }
+          
+          // Show toast with vote counts
+          const acceptCount = newVotes.accepted.length;
+          const rejectCount = newVotes.rejected.length;
+          
+          toast({
+            title: vote === 'accept' ? t("voteAccepted") : t("voteRejected"),
+            description: `${t("acceptedVotes")}: ${acceptCount} | ${t("rejectedVotes")}: ${rejectCount}`,
+          });
           
           return {...song, votes: newVotes};
         }
@@ -142,13 +158,28 @@ export default function SongSelector() {
         {t("chooseSong")}
       </h3>
 
-      {/* Song creation form */}
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow mb-8">
-        <div className="space-y-4">
+      {/* Song creation form - collapsible */}
+      <Collapsible
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow mb-8"
+      >
+        <div className="flex justify-between items-center">
+          <h4 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+            {t("addNewSong")}
+          </h4>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-9 p-0">
+              {isFormOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        
+        <CollapsibleContent className="mt-4 space-y-4">
           {/* Song title input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t("songTitle")}
+              {t("songTitle")} <span className="text-red-500">*</span>
             </label>
             <Input
               value={searchQuery}
@@ -223,8 +254,9 @@ export default function SongSelector() {
           
           {/* Comment textarea */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t("comment")}
+            <label className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <span>{t("comment")}</span>
+              <span className="text-xs text-gray-500 italic">{t("optional")}</span>
             </label>
             <Textarea
               value={commentText}
@@ -249,8 +281,8 @@ export default function SongSelector() {
               ) : t("submit")}
             </Button>
           </div>
-        </div>
-      </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Submitted songs list */}
       {submittedSongs.length > 0 && (
@@ -295,14 +327,14 @@ export default function SongSelector() {
                       <Button
                         variant={userAccepted ? "default" : "outline"}
                         size="icon"
-                        className={`rounded-full h-8 w-8 ${
+                        className={`rounded-full h-8 w-8 relative ${
                           userAccepted ? "bg-green-500 hover:bg-green-600" : "hover:bg-green-100 dark:hover:bg-green-900/30"
                         }`}
                         onClick={() => handleVote(song.id, 'accept')}
                       >
                         <Check size={16} className={userAccepted ? "text-white" : "text-green-500"} />
                         {acceptCount > 0 && (
-                          <span className="absolute -bottom-1 -right-1 bg-green-100 text-green-800 text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          <span className="absolute -bottom-1 -right-1 bg-green-100 text-green-800 text-xs rounded-full h-4 min-w-4 flex items-center justify-center px-1">
                             {acceptCount}
                           </span>
                         )}
@@ -311,14 +343,14 @@ export default function SongSelector() {
                       <Button
                         variant={userRejected ? "default" : "outline"}
                         size="icon"
-                        className={`rounded-full h-8 w-8 ${
+                        className={`rounded-full h-8 w-8 relative ${
                           userRejected ? "bg-red-500 hover:bg-red-600" : "hover:bg-red-100 dark:hover:bg-red-900/30"
                         }`}
                         onClick={() => handleVote(song.id, 'reject')}
                       >
                         <X size={16} className={userRejected ? "text-white" : "text-red-500"} />
                         {rejectCount > 0 && (
-                          <span className="absolute -bottom-1 -right-1 bg-red-100 text-red-800 text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          <span className="absolute -bottom-1 -right-1 bg-red-100 text-red-800 text-xs rounded-full h-4 min-w-4 flex items-center justify-center px-1">
                             {rejectCount}
                           </span>
                         )}

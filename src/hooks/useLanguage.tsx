@@ -1,197 +1,187 @@
 
-import { useState, createContext, useContext } from 'react';
+import { createContext, useContext, useState, ReactNode } from "react";
 
-type Language = 'uk' | 'cs';
+type Language = "cs" | "uk";
 
 interface LanguageContextType {
   language: Language;
   toggleLanguage: () => void;
-  t: (key: string, section?: string) => string;
+  t: (key: string) => string;
 }
 
-const translations = {
-  uploadButton: {
-    uk: "Завантажити будь-які файли",
-    cs: "Nahraj jakékoli soubory"
-  },
-  uploading: {
-    uk: "Завантаження...",
-    cs: "Nahrávání..."
+interface Translations {
+  [key: string]: {
+    cs: string;
+    uk: string;
+  };
+}
+
+const translations: Translations = {
+  introText: {
+    cs: "Vítejte na stránce fotografií",
+    uk: "Ласкаво просимо на сторінку фотографій",
   },
   dragHere: {
-    uk: "Перетягніть файли сюди",
-    cs: "Přetáhni soubory sem"
+    cs: "Přetáhněte soubor zde",
+    uk: "Перетягніть файл сюди",
   },
-  introText: {
-    uk: "Клацніть на кнопку, щоб завантажити файли",
-    cs: "Klikni na tlačítko pro nahrání souborů"
+  uploadFile: {
+    cs: "Nahrát soubor",
+    uk: "Завантажити файл",
   },
   chooseSong: {
-    uk: "Виберіть пісню, яку ви хочете",
-    cs: "Vyberte píseň, kterou chcete"
+    cs: "Vyberte píseň",
+    uk: "Виберіть пісню",
   },
   search: {
-    uk: "Пошук...",
-    cs: "Hledat..."
-  },
-  submit: {
-    uk: "Відправити",
-    cs: "Odeslat"
-  },
-  submitting: {
-    uk: "Відправляється...",
-    cs: "Odesílání..."
-  },
-  accepted: {
-    uk: "Прийнято",
-    cs: "Přijato"
-  },
-  rejected: {
-    uk: "Відхилено",
-    cs: "Odmítnuto"
-  },
-  songAdded: {
-    uk: "Пісню додано",
-    cs: "Píseň přidána"
-  },
-  songs: {
-    uk: "пісні",
-    cs: "písní"
-  },
-  song: {
-    uk: "пісня",
-    cs: "píseň"
-  },
-  searching: {
-    uk: "Пошук...",
-    cs: "Vyhledávání..."
-  },
-  searchError: {
-    uk: "Помилка пошуку",
-    cs: "Chyba hledání"
-  },
-  searchErrorDescription: {
-    uk: "Не вдалося знайти пісні. Спробуйте знову.",
-    cs: "Nepodařilo se najít písně. Zkuste to znovu."
-  },
-  by: {
-    uk: "від",
-    cs: "od"
-  },
-  platform: {
-    uk: "Платформа",
-    cs: "Platforma"
-  },
-  allPlatforms: {
-    uk: "Всі платформи",
-    cs: "Všechny platformy"
-  },
-  creator: {
-    uk: "Творець",
-    cs: "Tvůrce"
-  },
-  enterCreator: {
-    uk: "Введіть ім'я творця",
-    cs: "Zadejte jméno tvůrce"
-  },
-  unknownCreator: {
-    uk: "Невідомий творець",
-    cs: "Neznámý tvůrce"
-  },
-  customPlatform: {
-    uk: "Власна платформа",
-    cs: "Vlastní platforma"
-  },
-  enterCustomPlatform: {
-    uk: "Введіть назву платформи",
-    cs: "Zadejte název platformy"
-  },
-  yourName: {
-    uk: "Ваше ім'я",
-    cs: "Vaše jméno"
-  },
-  enterYourName: {
-    uk: "Введіть ваше ім'я",
-    cs: "Zadejte své jméno"
-  },
-  comment: {
-    uk: "Коментар",
-    cs: "Komentář"
-  },
-  comments: {
-    uk: "Коментарі",
-    cs: "Komentáře"
-  },
-  enterComment: {
-    uk: "Введіть ваш коментар...",
-    cs: "Zadejte svůj komentář..."
-  },
-  addComment: {
-    uk: "Додати коментар...",
-    cs: "Přidat komentář..."
-  },
-  post: {
-    uk: "Опубліковати",
-    cs: "Odeslat"
-  },
-  commentAdded: {
-    uk: "Коментар додано",
-    cs: "Komentář přidán"
-  },
-  commentAddedDescription: {
-    uk: "Ваш коментар був успішно доданий",
-    cs: "Váš komentář byl úspěšně přidán"
-  },
-  anonymousUser: {
-    uk: "Анонімний користувач",
-    cs: "Anonymní uživatel"
-  },
-  error: {
-    uk: "Помилка",
-    cs: "Chyba"
+    cs: "Hledat",
+    uk: "Пошук",
   },
   enterSongTitle: {
-    uk: "Будь ласка, введіть назву пісні",
-    cs: "Prosím, zadejte název písně"
+    cs: "Zadejte název písně",
+    uk: "Введіть назву пісні",
   },
-  songTitle: {
-    uk: "Назва пісні",
-    cs: "Název písně"
+  enterCreator: {
+    cs: "Zadejte jméno tvůrce",
+    uk: "Введіть ім'я творця",
+  },
+  noResults: {
+    cs: "Žádné výsledky",
+    uk: "Немає результатів",
+  },
+  error: {
+    cs: "Chyba",
+    uk: "Помилка",
+  },
+  songAdded: {
+    cs: "Píseň přidána",
+    uk: "Пісня додана",
+  },
+  submit: {
+    cs: "Přidat",
+    uk: "Додати",
+  },
+  submitting: {
+    cs: "Přidávám...",
+    uk: "Додавання...",
+  },
+  platform: {
+    cs: "Platforma",
+    uk: "Платформа",
   },
   selectPlatform: {
+    cs: "Vyberte platformu",
     uk: "Виберіть платформу",
-    cs: "Vyberte platformu"
+  },
+  customPlatform: {
+    cs: "Vlastní platforma",
+    uk: "Власна платформа",
+  },
+  enterCustomPlatform: {
+    cs: "Zadejte název platformy",
+    uk: "Введіть назву платформи",
+  },
+  creator: {
+    cs: "Tvůrce",
+    uk: "Творець",
+  },
+  yourName: {
+    cs: "Vaše jméno",
+    uk: "Ваше ім'я",
+  },
+  enterYourName: {
+    cs: "Zadejte své jméno",
+    uk: "Введіть своє ім'я",
+  },
+  comment: {
+    cs: "Komentář",
+    uk: "Коментар",
+  },
+  enterComment: {
+    cs: "Zadejte komentář",
+    uk: "Введіть коментар",
+  },
+  commentAdded: {
+    cs: "Komentář přidán",
+    uk: "Коментар додано",
+  },
+  commentAddedDescription: {
+    cs: "Váš komentář byl úspěšně přidán",
+    uk: "Ваш коментар був успішно доданий",
+  },
+  songs: {
+    cs: "písní",
+    uk: "пісень",
+  },
+  song: {
+    cs: "píseň",
+    uk: "пісня",
+  },
+  addComment: {
+    cs: "Přidat komentář",
+    uk: "Додати коментар",
+  },
+  post: {
+    cs: "Odeslat",
+    uk: "Надіслати",
+  },
+  comments: {
+    cs: "Komentáře",
+    uk: "Коментарі",
+  },
+  unknownCreator: {
+    cs: "Neznámý tvůrce",
+    uk: "Невідомий творець",
+  },
+  anonymousUser: {
+    cs: "Anonymní uživatel",
+    uk: "Анонімний користувач",
+  },
+  songTitle: {
+    cs: "Název písně",
+    uk: "Назва пісні",
+  },
+  addNewSong: {
+    cs: "Přidat novou píseň",
+    uk: "Додати нову пісню",
+  },
+  optional: {
+    cs: "nepovinné",
+    uk: "необов'язково",
+  },
+  voteAccepted: {
+    cs: "Hlas přijat",
+    uk: "Голос прийнято",
+  },
+  voteRejected: {
+    cs: "Hlas odmítnut",
+    uk: "Голос відхилено",
+  },
+  acceptedVotes: {
+    cs: "Pro",
+    uk: "За",
+  },
+  rejectedVotes: {
+    cs: "Proti",
+    uk: "Проти",
   }
 };
 
-const LanguageContext = createContext<LanguageContextType>({
-  language: 'cs',
-  toggleLanguage: () => {},
-  t: () => '',
-});
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  const [language, setLanguage] = useState<Language>(() => {
-    const savedLanguage = localStorage.getItem('app-language');
-    return (savedLanguage as Language) || 'cs';
-  });
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  const [language, setLanguage] = useState<Language>("cs");
 
   const toggleLanguage = () => {
-    const newLanguage: Language = language === 'cs' ? 'uk' : 'cs';
-    setLanguage(newLanguage);
-    localStorage.setItem('app-language', newLanguage);
+    setLanguage(prev => (prev === "cs" ? "uk" : "cs"));
   };
 
-  const t = (key: string, section?: string): string => {
-    if (section && translations[section] && translations[section][key]) {
-      return translations[section][key][language];
+  const t = (key: string): string => {
+    if (!translations[key]) {
+      console.warn(`Translation for "${key}" not found.`);
+      return key;
     }
-    
-    if (translations[key]) {
-      return translations[key][language];
-    }
-    
-    return key;
+    return translations[key][language];
   };
 
   return (
@@ -201,4 +191,10 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   );
 };
 
-export const useLanguage = () => useContext(LanguageContext);
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+  return context;
+};

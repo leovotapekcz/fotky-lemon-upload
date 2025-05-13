@@ -38,7 +38,7 @@ export default function Header() {
         <div className="flex justify-center">
           <button
             onClick={() => setIsMinimized(false)}
-            className="w-24 h-2 bg-white hover:bg-white/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-2 animate-fade-in"
+            className="w-16 h-1.5 bg-white hover:bg-white/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-1 animate-fade-in"
           />
         </div>
       ) : (
