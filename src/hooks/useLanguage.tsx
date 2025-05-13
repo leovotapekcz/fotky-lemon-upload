@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode } from "react";
 
 type Language = "cs" | "uk";
@@ -164,7 +163,39 @@ const translations: Translations = {
   rejectedVotes: {
     cs: "Proti",
     uk: "Проти",
-  }
+  },
+  uploading: {
+    cs: "Nahrávám...",
+    uk: "Завантаження...",
+  },
+  uploadButton: {
+    cs: "Nahrát fotky",
+    uk: "Завантажити фото",
+  },
+  filesUploaded: {
+    cs: "Soubory nahrány",
+    uk: "Файли завантажено",
+  },
+  fileUploaded: {
+    cs: "Soubor nahrán",
+    uk: "Файл завантажено",
+  },
+  filesUploadedSuccess: {
+    cs: "soubory byly nahrány úspěšně",
+    uk: "файлів завантажено успішно",
+  },
+  fileUploadedSuccess: {
+    cs: "soubor byl nahrán úspěšně",
+    uk: "файл завантажено успішно",
+  },
+  errorUploading: {
+    cs: "Chyba při nahrávání",
+    uk: "Помилка при завантаженні",
+  },
+  errorUploadingFiles: {
+    cs: "Nastala chyba při nahrávání souborů.",
+    uk: "Сталася помилка під час завантаження файлів.",
+  },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);

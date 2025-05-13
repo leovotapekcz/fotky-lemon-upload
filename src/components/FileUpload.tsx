@@ -13,7 +13,7 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -46,16 +46,14 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
       setTimeout(() => {
         onUploadProgress && onUploadProgress(null);
         toast({
-          title: language === "uk" ? "Файли завантажено" : "Soubory nahrány",
-          description: language === "uk" 
-            ? `${files.length} ${files.length === 1 ? 'файл завантажено' : 'файлів завантажено'} успішно.`
-            : `${files.length} ${files.length === 1 ? 'soubor byl nahrán' : 'soubory byly nahrány'} úspěšně.`
+          title: t("filesUploaded"),
+          description: `${files.length} ${files.length === 1 ? t("fileUploadedSuccess") : t("filesUploadedSuccess")}`
         });
       }, 200); // Shorter display time
     } catch (error) {
       toast({
-        title: language === "uk" ? "Помилка" : "Chyba",
-        description: language === "uk" ? "Сталася помилка під час завантаження файлів." : "Nastala chyba při nahrávání souborů.",
+        title: t("errorUploading"),
+        description: t("errorUploadingFiles"),
         variant: "destructive"
       });
       onUploadProgress && onUploadProgress(null);
