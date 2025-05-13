@@ -7,6 +7,13 @@ import { Check, X, Search, Youtube, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { searchSongs } from "@/services/songService";
 import { Song } from "@/types/song";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 export default function SongSelector() {
   const { language, t } = useLanguage();
@@ -17,6 +24,8 @@ export default function SongSelector() {
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>(undefined);
+  const [creatorName, setCreatorName] = useState("");
   const resultsContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -30,7 +39,7 @@ export default function SongSelector() {
     setError(null);
     
     try {
-      const results = await searchSongs(query, language);
+      const results = await searchSongs(query, language, selectedPlatform);
       setSearchResults(results);
     } catch (err) {
       console.error("Search error:", err);
@@ -49,16 +58,22 @@ export default function SongSelector() {
     if (selectedSong) {
       setIsSubmitting(true);
       
+      // If creator name is provided, update the selected song
+      const updatedSong = creatorName.trim() 
+        ? { ...selectedSong, creator: creatorName } 
+        : selectedSong;
+      
       setTimeout(() => {
-        setSubmittedSongs(prev => [selectedSong, ...prev]);
+        setSubmittedSongs(prev => [updatedSong, ...prev]);
         setSelectedSong(null);
         setSearchQuery("");
         setSearchResults([]);
+        setCreatorName("");
         setIsSubmitting(false);
         
         toast({
           title: t("songAdded"),
-          description: `${selectedSong.title} by ${selectedSong.artist}`,
+          description: `${updatedSong.title} by ${updatedSong.artist}`,
         });
       }, 300);
     }
@@ -106,7 +121,7 @@ export default function SongSelector() {
     }, 500); // Increased debounce time for better performance
     
     return () => clearTimeout(debounceTimeout);
-  }, [searchQuery, language]);
+  }, [searchQuery, language, selectedPlatform]);
 
   // Close search results when clicking outside
   useEffect(() => {
@@ -131,6 +146,26 @@ export default function SongSelector() {
         {t("chooseSong")}
       </h3>
 
+      {/* Platform selector */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {t("platform")}
+        </label>
+        <Select
+          value={selectedPlatform}
+          onValueChange={(value) => setSelectedPlatform(value === "all" ? undefined : value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={t("allPlatforms")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("allPlatforms")}</SelectItem>
+            <SelectItem value="youtube">YouTube</SelectItem>
+            <SelectItem value="spotify">Spotify</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
       <div className="relative">
         <div className="relative">
           <Input
@@ -179,16 +214,17 @@ export default function SongSelector() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{t("by")} {song.artist}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                       {song.source === "youtube" ? (
-                        <>
+                        <span className="flex items-center">
                           <Youtube className="w-4 h-4 mr-1 text-red-500" /> YouTube
-                        </>
+                        </span>
                       ) : (
                         <span className="flex items-center">
                           <Music className="w-4 h-4 mr-1 text-green-500" /> Spotify
                         </span>
-                      )} • {song.artist}
+                      )} • {song.creator || t("unknownCreator")}
                     </p>
                   </div>
                 </div>
@@ -200,45 +236,64 @@ export default function SongSelector() {
       
       {selectedSong && (
         <div 
-          className={`mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-2xl border border-purple-200 dark:border-purple-700 flex items-start transition-all duration-500 animate-fade-in ${
+          className={`mt-4 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-2xl border border-purple-200 dark:border-purple-700 flex flex-col transition-all duration-500 animate-fade-in ${
             isSubmitting ? "opacity-50 scale-95" : ""
           }`}
         >
-          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4">
-            <img 
-              src={selectedSong.thumbnail} 
-              alt={selectedSong.title} 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
-              }}
+          <div className="flex items-start mb-3">
+            <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4">
+              <img 
+                src={selectedSong.thumbnail} 
+                alt={selectedSong.title} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/200/200';
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-gray-900 dark:text-gray-100">{selectedSong.title}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSong.artist}</p>
+              <p className="text-xs mt-1">
+                {selectedSong.source === "youtube" ? (
+                  <span className="flex items-center text-red-500"><Youtube className="w-3 h-3 mr-1" /> YouTube</span>
+                ) : (
+                  <span className="flex items-center text-green-500"><Music className="w-3 h-3 mr-1" /> Spotify</span>
+                )}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setSelectedSong(null)}
+                className="rounded-full h-8 w-8"
+                disabled={isSubmitting}
+              >
+                <X size={16} />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Creator input field */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("creator")}
+            </label>
+            <Input
+              value={creatorName}
+              onChange={(e) => setCreatorName(e.target.value)}
+              placeholder={selectedSong.creator || t("enterCreator")}
+              className="w-full"
+              disabled={isSubmitting}
             />
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-gray-900 dark:text-gray-100">{selectedSong.title}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSong.artist}</p>
-            <p className="text-xs mt-1">
-              {selectedSong.source === "youtube" ? (
-                <span className="flex items-center text-red-500"><Youtube className="w-3 h-3 mr-1" /> YouTube</span>
-              ) : (
-                <span className="flex items-center text-green-500"><Music className="w-3 h-3 mr-1" /> Spotify</span>
-              )}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setSelectedSong(null)}
-              className="rounded-full h-8 w-8"
-              disabled={isSubmitting}
-            >
-              <X size={16} />
-            </Button>
+
+          <div className="flex justify-end">
             <Button 
               onClick={handleSubmit} 
               disabled={isSubmitting}
-              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full"
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-6"
             >
               {isSubmitting ? (
                 <span className="flex items-center">
@@ -282,6 +337,9 @@ export default function SongSelector() {
                   <div className="flex-1 min-w-0 mr-4">
                     <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{song.title}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{song.artist}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {song.creator || t("unknownCreator")}
+                    </p>
                   </div>
                   
                   <div className="flex items-center space-x-1">

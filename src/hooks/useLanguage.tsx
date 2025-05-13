@@ -73,6 +73,30 @@ const translations = {
   searchErrorDescription: {
     uk: "Не вдалося знайти пісні. Спробуйте знову.",
     cs: "Nepodařilo se najít písně. Zkuste to znovu."
+  },
+  by: {
+    uk: "від",
+    cs: "od"
+  },
+  platform: {
+    uk: "Платформа",
+    cs: "Platforma"
+  },
+  allPlatforms: {
+    uk: "Всі платформи",
+    cs: "Všechny platformy"
+  },
+  creator: {
+    uk: "Творець",
+    cs: "Tvůrce"
+  },
+  enterCreator: {
+    uk: "Введіть ім'я творця",
+    cs: "Zadejte jméno tvůrce"
+  },
+  unknownCreator: {
+    uk: "Невідомий творець",
+    cs: "Neznámý tvůrce"
   }
 };
 

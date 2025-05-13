@@ -14,8 +14,8 @@ const buildSpotifySearchUrl = (query: string) => {
 };
 
 // Function to search for songs on YouTube and Spotify
-export async function searchSongs(query: string, language: string): Promise<Song[]> {
-  console.log(`Searching for "${query}" in ${language}`);
+export async function searchSongs(query: string, language: string, platform?: string): Promise<Song[]> {
+  console.log(`Searching for "${query}" in ${language}${platform ? `, platform: ${platform}` : ''}`);
   
   try {
     // Since we can't use real API keys in the frontend, we'll simulate the API calls
@@ -24,33 +24,44 @@ export async function searchSongs(query: string, language: string): Promise<Song
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
-    // Generate YouTube-like results based on the query
-    const youtubeResults: Song[] = [];
-    for (let i = 1; i <= 5; i++) {
-      youtubeResults.push({
-        id: `yt-${i}-${Date.now()}`,
-        title: `${query} - ${i === 1 ? "Official Video" : `Cover ${i}`}`,
-        artist: `Artist ${String.fromCharCode(64 + i)}`,
-        thumbnail: `https://picsum.photos/seed/${query.replace(/\s+/g, '')}${i}/200/200`,
-        source: "youtube",
-        votes: { accepted: [], rejected: [] }
-      });
+    // Generate results based on selected platform or both if no platform specified
+    let results: Song[] = [];
+    
+    if (!platform || platform === 'youtube') {
+      // Generate YouTube-like results based on the query
+      const youtubeResults: Song[] = [];
+      for (let i = 1; i <= 5; i++) {
+        youtubeResults.push({
+          id: `yt-${i}-${Date.now()}`,
+          title: `${query} - ${i === 1 ? "Official Video" : `Cover ${i}`}`,
+          artist: `Artist ${String.fromCharCode(64 + i)}`,
+          creator: `YouTuber ${String.fromCharCode(64 + i + 10)}`,
+          thumbnail: `https://picsum.photos/seed/${query.replace(/\s+/g, '')}${i}/200/200`,
+          source: "youtube",
+          votes: { accepted: [], rejected: [] }
+        });
+      }
+      results = [...results, ...youtubeResults];
     }
     
-    // Generate Spotify-like results
-    const spotifyResults: Song[] = [];
-    for (let i = 1; i <= 3; i++) {
-      spotifyResults.push({
-        id: `sp-${i}-${Date.now()}`,
-        title: `${query} ${i === 1 ? "Radio" : `Mix ${i}`}`,
-        artist: `DJ ${String.fromCharCode(64 + i)}`,
-        thumbnail: `https://picsum.photos/seed/spot${query.replace(/\s+/g, '')}${i}/200/200`,
-        source: "spotify",
-        votes: { accepted: [], rejected: [] }
-      });
+    if (!platform || platform === 'spotify') {
+      // Generate Spotify-like results
+      const spotifyResults: Song[] = [];
+      for (let i = 1; i <= 3; i++) {
+        spotifyResults.push({
+          id: `sp-${i}-${Date.now()}`,
+          title: `${query} ${i === 1 ? "Radio" : `Mix ${i}`}`,
+          artist: `DJ ${String.fromCharCode(64 + i)}`,
+          creator: `Spotify ${String.fromCharCode(64 + i + 5)}`,
+          thumbnail: `https://picsum.photos/seed/spot${query.replace(/\s+/g, '')}${i}/200/200`,
+          source: "spotify",
+          votes: { accepted: [], rejected: [] }
+        });
+      }
+      results = [...results, ...spotifyResults];
     }
     
-    return [...youtubeResults, ...spotifyResults];
+    return results;
   } catch (error) {
     console.error("Error searching for songs:", error);
     throw new Error("Failed to search for songs");
