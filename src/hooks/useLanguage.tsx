@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, ReactNode } from "react";
 
 type Language = "cs" | "uk";
@@ -91,6 +92,10 @@ const translations: Translations = {
   enterYourName: {
     cs: "Zadejte své jméno",
     uk: "Введіть своє ім'я",
+  },
+  rememberName: {
+    cs: "Zapamatovat jméno",
+    uk: "Запам'ятати ім'я",
   },
   comment: {
     cs: "Komentář",

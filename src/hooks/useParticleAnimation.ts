@@ -49,7 +49,7 @@ export const useParticleAnimation = (
         const y = Math.random() * canvas.height;
         const calculatedHue = (x / canvas.width) * 60 + 200 + Math.random() * 30;
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 0.4 + 0.1; // Varied movement speed
+        const speed = Math.random() * 0.25 + 0.05; // Reduced speed for slower floating
         
         return {
           x,
@@ -71,35 +71,35 @@ export const useParticleAnimation = (
       const currentHeaderHeight = headerElement?.getBoundingClientRect().height || headerHeight;
       
       // Slowly change the global hue for color variation
-      hue = (hue + 0.1) % 360;
+      hue = (hue + 0.05) % 360; // Slowed down color change
 
       particles.forEach(particle => {
-        // Wave-like movement
-        particle.angle += (Math.random() - 0.5) * 0.03;
+        // Wave-like movement - slowed down
+        particle.angle += (Math.random() - 0.5) * 0.015;
         particle.x += Math.cos(particle.angle) * particle.speed;
         particle.y += Math.sin(particle.angle) * particle.speed;
         
-        // Pulsating size
+        // Pulsating size - more gentle
         if (particle.growing) {
-          particle.size += 0.03;
+          particle.size += 0.02;
           if (particle.size > 7) {
             particle.growing = false;
           }
         } else {
-          particle.size -= 0.03;
+          particle.size -= 0.02;
           if (particle.size < 2) {
             particle.growing = true;
           }
         }
         
-        // Mouse/touch interaction - stronger repulsion
+        // Mouse/touch interaction - gentler repulsion
         const dx = mouseX - particle.x;
         const dy = mouseY - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < 150) {
           const angle = Math.atan2(dy, dx);
-          const force = (150 - distance) * 0.03;
+          const force = (150 - distance) * 0.02;
           particle.vx = -Math.cos(angle) * force;
           particle.vy = -Math.sin(angle) * force;
         }
@@ -110,7 +110,7 @@ export const useParticleAnimation = (
         
         if (touchDistance < 150 && touchX !== 0 && touchY !== 0) {
           const angle = Math.atan2(tdy, tdx);
-          const force = (150 - touchDistance) * 0.04;
+          const force = (150 - touchDistance) * 0.03;
           particle.vx = -Math.cos(angle) * force;
           particle.vy = -Math.sin(angle) * force;
         }
@@ -118,8 +118,8 @@ export const useParticleAnimation = (
         // Apply velocity with more fluid movement
         particle.x += particle.vx;
         particle.y += particle.vy;
-        particle.vx *= 0.92;
-        particle.vy *= 0.92;
+        particle.vx *= 0.94; // Gentler deceleration
+        particle.vy *= 0.94;
 
         // Wrap around screen edges with a slight fade effect
         if (particle.x < -50) particle.x = canvas.width + 50;
@@ -131,10 +131,10 @@ export const useParticleAnimation = (
         const distanceFromCenter = Math.abs((particle.y / canvas.height) - 0.5) * 2;
         let opacity = particle.opacity * (1 - Math.pow(distanceFromCenter, 1.5));
         
-        // Fluctuate opacity slightly for twinkling effect
-        opacity *= 0.8 + 0.2 * Math.sin(Date.now() * 0.001 + particle.x * 0.01);
+        // Fluctuate opacity slightly for twinkling effect - more subtle
+        opacity *= 0.85 + 0.15 * Math.sin(Date.now() * 0.0005 + particle.x * 0.01);
         
-        const particleHue = (parseFloat(particle.color.match(/hsla\((\d+\.?\d*)/)?.[1] || "0") + Math.sin(Date.now() * 0.0005) * 5) % 360;
+        const particleHue = (parseFloat(particle.color.match(/hsla\((\d+\.?\d*)/)?.[1] || "0") + Math.sin(Date.now() * 0.0003) * 5) % 360;
         const color = `hsla(${particleHue}, 70%, 50%, ${opacity})`;
         
         const topBarMinimized = !headerElement || headerElement.style.display === 'none';

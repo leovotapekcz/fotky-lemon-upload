@@ -13,6 +13,7 @@ export default function Header() {
   const [themeButtonAnimating, setThemeButtonAnimating] = useState(false);
   const { language, toggleLanguage } = useLanguage();
   const [titleHovered, setTitleHovered] = useState(false);
+  const [languageSwitching, setLanguageSwitching] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -25,6 +26,12 @@ export default function Header() {
     setTheme(theme === "light" ? "dark" : "light");
     setThemeButtonAnimating(true);
     setTimeout(() => setThemeButtonAnimating(false), 1000);
+  };
+
+  const handleLanguageToggle = () => {
+    setLanguageSwitching(true);
+    toggleLanguage();
+    setTimeout(() => setLanguageSwitching(false), 800);
   };
 
   const translations = {
@@ -40,7 +47,7 @@ export default function Header() {
         <div className="flex justify-center">
           <button
             onClick={() => setIsMinimized(false)}
-            className="w-16 h-1.5 bg-white hover:bg-white/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-1 animate-fade-in hover:w-32 hover:h-2"
+            className="w-16 h-1 bg-white hover:bg-white/80 rounded-full shadow-md border border-white/30 transition-all duration-500 mb-1 animate-fade-in hover:w-32 hover:h-2"
           />
         </div>
       ) : (
@@ -64,12 +71,17 @@ export default function Header() {
               onMouseEnter={() => setTitleHovered(true)}
               onMouseLeave={() => setTitleHovered(false)}
             >
-              {translations.title[language]}
+              <span className={cn(
+                "inline-block transition-all",
+                languageSwitching ? "animate-bounce" : ""
+              )}>
+                {translations.title[language]}
+              </span>
             </h1>
 
             <button
               onClick={() => setIsMinimized(true)}
-              className="absolute left-1/2 transform -translate-x-1/2 bottom-[-25px] w-28 h-3 bg-white hover:bg-white/90 rounded-full shadow-lg transition-all duration-300 border-2 border-white/50 hover:scale-110"
+              className="absolute left-1/2 transform -translate-x-1/2 bottom-[-20px] w-24 h-1.5 bg-white hover:bg-white/90 rounded-full shadow-lg transition-all duration-300 border-2 border-white/50 hover:scale-110"
             />
 
             <div className="flex gap-3 absolute right-0">
@@ -78,9 +90,10 @@ export default function Header() {
                 size="icon"
                 className={cn(
                   "rounded-full w-10 h-10 bg-white/30 hover:bg-white/40 border-2 border-white/50 shadow-lg transition-all duration-300",
-                  "hover:scale-110 hover:rotate-6"
+                  "hover:scale-110 hover:rotate-6",
+                  languageSwitching ? "animate-spin" : ""
                 )}
-                onClick={toggleLanguage}
+                onClick={handleLanguageToggle}
               >
                 {language === "cs" ? (
                   <span className="text-lg font-bold animate-pulse">🇺🇦</span>

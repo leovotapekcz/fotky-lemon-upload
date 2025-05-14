@@ -13,9 +13,26 @@ import { cn } from "@/lib/utils";
 const Index = () => {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { isDragging, handleDragOver, handleDragLeave, handleDrop } = useFileUpload(setUploadProgress);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isLoaded, setIsLoaded] = useState(false);
   const [textReveal, setTextReveal] = useState(false);
+  const [languageChanged, setLanguageChanged] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState(language);
+
+  // Track language changes for animation
+  useEffect(() => {
+    if (currentLanguage !== language) {
+      setLanguageChanged(true);
+      setCurrentLanguage(language);
+      
+      // Reset animation after it completes
+      const timer = setTimeout(() => {
+        setLanguageChanged(false);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [language, currentLanguage]);
 
   useEffect(() => {
     // Staggered animations
@@ -31,7 +48,8 @@ const Index = () => {
     <div 
       className={cn(
         "min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 relative overflow-hidden transition-colors duration-700",
-        isLoaded ? "opacity-100" : "opacity-0"
+        isLoaded ? "opacity-100" : "opacity-0",
+        languageChanged ? "animate-pulse" : ""
       )}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -43,14 +61,16 @@ const Index = () => {
         <p className={cn(
           "text-4xl font-bold text-gray-700 dark:text-gray-300 text-center transition-all duration-700 transform",
           textReveal ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
-          "bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 text-transparent"
+          "bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 text-transparent",
+          languageChanged ? "animate-bounce" : ""
         )}>
           {t("introText")}
         </p>
         
         <div className={cn(
           "transition-all duration-700 transform",
-          textReveal ? "translate-y-0 opacity-100 delay-300" : "translate-y-20 opacity-0"
+          textReveal ? "translate-y-0 opacity-100 delay-300" : "translate-y-20 opacity-0",
+          languageChanged ? "animate-pulse scale-105" : ""
         )}>
           <FileUpload onUploadProgress={setUploadProgress} />
         </div>
@@ -69,14 +89,16 @@ const Index = () => {
 
         <div className={cn(
           "transition-all duration-700 transform w-full",
-          textReveal ? "translate-y-0 opacity-100 delay-500" : "translate-y-20 opacity-0"
+          textReveal ? "translate-y-0 opacity-100 delay-500" : "translate-y-20 opacity-0",
+          languageChanged ? "animate-pulse scale-105" : ""
         )}>
           <SongSelector />
         </div>
       </main>
       <div className={cn(
         "transition-all duration-700 transform",
-        textReveal ? "translate-y-0 opacity-100 delay-700" : "translate-y-10 opacity-0"
+        textReveal ? "translate-y-0 opacity-100 delay-700" : "translate-y-10 opacity-0",
+        languageChanged ? "animate-pulse" : ""
       )}>
         <Footer />
       </div>
