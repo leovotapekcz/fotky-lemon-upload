@@ -56,6 +56,7 @@ app.post('/api/upload', upload.array('files'), (req, res) => {
     path: `/uploads/${file.filename}`
   }));
   
+  console.log('Files uploaded successfully:', filePaths);
   res.json({ files: filePaths });
 });
 
