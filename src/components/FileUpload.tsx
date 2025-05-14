@@ -27,21 +27,37 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
     onUploadProgress && onUploadProgress(0);
     
     try {
-      // Simulate ultra-fast upload progress
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+      }
+      
+      // Set up progress tracking
       let progress = 0;
       const interval = setInterval(() => {
-        progress += Math.random() * 30; // Even faster speed
+        progress += Math.random() * 30;
         if (progress >= 100) {
           progress = 100;
           clearInterval(interval);
         }
         onUploadProgress && onUploadProgress(progress);
-      }, 50); // Ultra fast interval
+      }, 50);
       
-      // Simulate nearly instant network request
-      await new Promise(resolve => setTimeout(resolve, 800)); // Much shorter time
+      // Send the files to our server
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
       clearInterval(interval);
       onUploadProgress && onUploadProgress(100);
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      console.log('Upload result:', result);
       
       setTimeout(() => {
         onUploadProgress && onUploadProgress(null);
@@ -49,8 +65,9 @@ export default function FileUpload({ onUploadProgress }: FileUploadProps) {
           title: t("filesUploaded"),
           description: `${files.length} ${files.length === 1 ? t("fileUploadedSuccess") : t("filesUploadedSuccess")}`
         });
-      }, 200); // Shorter display time
+      }, 200);
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: t("errorUploading"),
         description: t("errorUploadingFiles"),

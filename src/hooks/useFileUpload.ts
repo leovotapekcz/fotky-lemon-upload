@@ -44,12 +44,15 @@ export const useFileUpload = (onProgress: (progress: number | null) => void) => 
         if (xhr.status >= 200 && xhr.status < 300) {
           onProgress(100);
           setTimeout(() => onProgress(null), 500);
+          console.log('Upload success response:', xhr.responseText);
         } else {
+          console.error('Upload failed with status:', xhr.status);
           throw new Error('Upload failed');
         }
       });
       
       xhr.addEventListener('error', () => {
+        console.error('XHR upload error');
         throw new Error('Upload failed');
       });
       

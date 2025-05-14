@@ -6,7 +6,7 @@ echo "==================================="
 
 # Install missing dependencies if needed
 echo "Checking and installing dependencies..."
-npm i multer --no-save
+npm i multer express compression helmet --no-save
 
 # Build the React app first
 echo "Building React application..."
