@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import FileUpload from "@/components/FileUpload";
 import Footer from "@/components/Footer";
@@ -25,10 +24,10 @@ const Index = () => {
       setLanguageChanged(true);
       setCurrentLanguage(language);
       
-      // Reset animation after it completes
+      // Reduced animation time from 1500ms to 500ms
       const timer = setTimeout(() => {
         setLanguageChanged(false);
-      }, 1500);
+      }, 500);
       
       return () => clearTimeout(timer);
     }

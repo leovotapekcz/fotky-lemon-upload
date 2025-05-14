@@ -1,4 +1,3 @@
-
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,7 @@ export default function Header() {
   const handleLanguageToggle = () => {
     setLanguageSwitching(true);
     toggleLanguage();
-    setTimeout(() => setLanguageSwitching(false), 800);
+    setTimeout(() => setLanguageSwitching(false), 500);
   };
 
   const translations = {
