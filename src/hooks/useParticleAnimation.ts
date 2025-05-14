@@ -1,3 +1,4 @@
+
 import { useEffect, RefObject } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -10,6 +11,8 @@ interface Particle {
   color: string;
   angle: number;
   speed: number;
+  opacity: number;
+  growing: boolean;
 }
 
 export const useParticleAnimation = (
@@ -31,6 +34,7 @@ export const useParticleAnimation = (
     let touchX = 0;
     let touchY = 0;
     let headerElement: HTMLElement | null = null;
+    let hue = Math.random() * 360;
 
     const init = () => {
       canvas.width = window.innerWidth;
@@ -38,24 +42,26 @@ export const useParticleAnimation = (
       headerElement = document.querySelector('header');
       
       // Reduce particle count on mobile
-      const particleCount = isMobile ? 60 : 120;
+      const particleCount = isMobile ? 60 : 150;
       
       particles = Array.from({ length: particleCount }, () => {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        const hue = (x / canvas.width) * 60 + 200;
+        const calculatedHue = (x / canvas.width) * 60 + 200 + Math.random() * 30;
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 0.3 + 0.05; // Slower movement
+        const speed = Math.random() * 0.4 + 0.1; // Varied movement speed
         
         return {
           x,
           y,
-          size: Math.random() * 4 + 3,
+          size: Math.random() * 5 + 2,
           vx: 0,
           vy: 0,
-          color: `hsla(${hue}, 70%, 50%, 0.8)`,
+          color: `hsla(${calculatedHue}, 70%, 50%, 0.8)`,
           angle,
-          speed
+          speed,
+          opacity: Math.random() * 0.5 + 0.3,
+          growing: Math.random() > 0.5
         };
       });
     };
@@ -63,53 +69,85 @@ export const useParticleAnimation = (
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const currentHeaderHeight = headerElement?.getBoundingClientRect().height || headerHeight;
+      
+      // Slowly change the global hue for color variation
+      hue = (hue + 0.1) % 360;
 
       particles.forEach(particle => {
-        particle.x += Math.cos(particle.angle) * (particle.speed * 0.3);
-        particle.y += Math.sin(particle.angle) * (particle.speed * 0.3);
-        particle.angle += (Math.random() - 0.5) * 0.01;
+        // Wave-like movement
+        particle.angle += (Math.random() - 0.5) * 0.03;
+        particle.x += Math.cos(particle.angle) * particle.speed;
+        particle.y += Math.sin(particle.angle) * particle.speed;
         
+        // Pulsating size
+        if (particle.growing) {
+          particle.size += 0.03;
+          if (particle.size > 7) {
+            particle.growing = false;
+          }
+        } else {
+          particle.size -= 0.03;
+          if (particle.size < 2) {
+            particle.growing = true;
+          }
+        }
+        
+        // Mouse/touch interaction - stronger repulsion
         const dx = mouseX - particle.x;
         const dy = mouseY - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 100) {
+        if (distance < 150) {
           const angle = Math.atan2(dy, dx);
-          particle.vx = -Math.cos(angle) * (100 - distance) * 0.02;
-          particle.vy = -Math.sin(angle) * (100 - distance) * 0.02;
+          const force = (150 - distance) * 0.03;
+          particle.vx = -Math.cos(angle) * force;
+          particle.vy = -Math.sin(angle) * force;
         }
         
         const tdx = touchX - particle.x;
         const tdy = touchY - particle.y;
         const touchDistance = Math.sqrt(tdx * tdx + tdy * tdy);
         
-        if (touchDistance < 100 && touchX !== 0 && touchY !== 0) {
+        if (touchDistance < 150 && touchX !== 0 && touchY !== 0) {
           const angle = Math.atan2(tdy, tdx);
-          particle.vx = -Math.cos(angle) * (100 - touchDistance) * 0.02;
-          particle.vy = -Math.sin(angle) * (100 - touchDistance) * 0.02;
+          const force = (150 - touchDistance) * 0.04;
+          particle.vx = -Math.cos(angle) * force;
+          particle.vy = -Math.sin(angle) * force;
         }
         
+        // Apply velocity with more fluid movement
         particle.x += particle.vx;
         particle.y += particle.vy;
-        particle.vx *= 0.95;
-        particle.vy *= 0.95;
+        particle.vx *= 0.92;
+        particle.vy *= 0.92;
 
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
+        // Wrap around screen edges with a slight fade effect
+        if (particle.x < -50) particle.x = canvas.width + 50;
+        if (particle.x > canvas.width + 50) particle.x = -50;
+        if (particle.y < -50) particle.y = canvas.height + 50;
+        if (particle.y > canvas.height + 50) particle.y = -50;
 
+        // Calculate distance-based opacity for depth effect
         const distanceFromCenter = Math.abs((particle.y / canvas.height) - 0.5) * 2;
-        const opacity = 1 - Math.pow(distanceFromCenter, 1.5);
-        const color = particle.color.replace('0.8', opacity.toString());
+        let opacity = particle.opacity * (1 - Math.pow(distanceFromCenter, 1.5));
+        
+        // Fluctuate opacity slightly for twinkling effect
+        opacity *= 0.8 + 0.2 * Math.sin(Date.now() * 0.001 + particle.x * 0.01);
+        
+        const particleHue = (parseFloat(particle.color.match(/hsla\((\d+\.?\d*)/)?.[1] || "0") + Math.sin(Date.now() * 0.0005) * 5) % 360;
+        const color = `hsla(${particleHue}, 70%, 50%, ${opacity})`;
         
         const topBarMinimized = !headerElement || headerElement.style.display === 'none';
         
         if (topBarMinimized || particle.y > currentHeaderHeight + 20) {
           ctx.beginPath();
           ctx.fillStyle = color;
+          // Draw particles as a combination of circle and glow
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = color.replace(opacity.toString(), '0.3');
           ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
           ctx.fill();
+          ctx.shadowBlur = 0;
         }
       });
 
